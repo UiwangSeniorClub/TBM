@@ -400,6 +400,49 @@
       .card {
         width: 100%;
       }
+
+      html, body {
+        overflow-x: hidden;
+      }
+
+      .page,
+      .card,
+      .hero,
+      .readbox,
+      .question,
+      .field-grid,
+      .question-list,
+      .question,
+      .question-list,
+      .question * {
+        min-width: 0;
+      }
+
+      .field-grid,
+      .question-list {
+        width: 100%;
+      }
+
+      .radio-group {
+        min-width: 0;
+      }
+
+      .choice {
+        min-width: 0;
+        max-width: 100%;
+      }
+
+      .choice span {
+        min-width: 0;
+        word-break: keep-all;
+      }
+
+      .card,
+      .hero,
+      .readbox {
+        width: 100%;
+        overflow-x: hidden;
+      }
     }
   </style>
 </head>

@@ -150,9 +150,15 @@
       color: #344054;
     }
 
-    input, select, textarea, button {
+    input, select, textarea {
       width: 100%;
       font: inherit;
+    }
+
+    button {
+      width: 100%;
+      font: inherit;
+      cursor: pointer;
     }
 
     input, select, textarea {
@@ -192,9 +198,10 @@
     .intro-text {
       margin: 0;
       white-space: pre-wrap;
-      line-height: 1.75;
-      font-size: 15px;
-      color: #334155;
+      line-height: 1.8;
+      font-size: 16px;
+      font-weight: 500;
+      color: #1f2937;
     }
 
     .big-title {
@@ -203,6 +210,13 @@
       color: var(--navy);
       margin-bottom: 12px;
       letter-spacing: -0.02em;
+      line-height: 1.25;
+    }
+
+    .subtitle {
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--navy);
     }
 
     .question-list {
@@ -375,7 +389,6 @@
     <div class="hero">
       <div class="hero-badge">TBM · 안전확인</div>
       <h1>의왕시니어클럽 안전확인 일지 (TBM)</h1>
-      <p>작업 전 안전조치 확인과 위험요인 점검을 위한 입력 화면입니다.</p>
     </div>
 
     <div class="card">
@@ -409,7 +422,10 @@
     </div>
 
     <div class="card readbox">
-      <div class="big-title">안전점검 리스트(잠재위험요인 및 대책)</div>
+      <div class="big-title">
+        안전점검 리스트<br>
+        <span class="subtitle">(잠재위험요인 및 대책)</span>
+      </div>
       <pre id="introText" class="intro-text"></pre>
     </div>
 

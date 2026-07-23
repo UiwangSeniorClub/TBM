@@ -14,7 +14,6 @@
 
       --navy: #17324d;
       --teal: #0f766e;
-      --teal-weak: #e6fffb;
 
       --blue: #1d4ed8;
       --blue-weak: #e8f0ff;
@@ -33,6 +32,13 @@
       box-sizing: border-box;
     }
 
+    html,
+    body {
+      width: 100%;
+      max-width: 100%;
+      overflow-x: hidden;
+    }
+
     body {
       margin: 0;
       font-family: "Pretendard", "Noto Sans KR", Arial, sans-serif;
@@ -41,11 +47,6 @@
         radial-gradient(circle at top left, rgba(15,118,110,0.10), transparent 30%),
         radial-gradient(circle at top right, rgba(29,78,216,0.08), transparent 28%),
         var(--bg);
-    }
-
-    html,
-    body {
-      overflow-x: hidden;
     }
 
     .page {
@@ -75,6 +76,7 @@
       font-weight: 800;
       box-shadow: 0 2px 8px rgba(0,0,0,0.04);
       backdrop-filter: blur(8px);
+      cursor: pointer;
     }
 
     h2 {
@@ -196,11 +198,21 @@
       min-width: 0;
     }
 
+    .unit-item.selected {
+      border: 2px solid var(--teal);
+      background: linear-gradient(180deg, #f0fffd 0%, #ffffff 100%);
+      box-shadow: 0 10px 22px rgba(15,118,110,0.12);
+    }
+
     .unit-name {
       font-weight: 900;
       color: #20324a;
       font-size: 18px;
       word-break: keep-all;
+    }
+
+    .unit-item.selected .unit-name {
+      color: var(--teal);
     }
 
     .unit-actions {
@@ -218,6 +230,7 @@
       color: var(--navy);
       border-radius: 10px;
       box-shadow: 0 1px 4px rgba(0,0,0,0.03);
+      cursor: pointer;
     }
 
     .unit-actions button:hover {
@@ -276,12 +289,6 @@
 
     .qrow button.removeBtn:hover {
       background: var(--red-weak);
-    }
-
-    .card > .row > button {
-      background: linear-gradient(135deg, var(--teal) 0%, #0b5f75 100%);
-      color: #fff;
-      box-shadow: 0 8px 18px rgba(15,118,110,0.16);
     }
 
     #addUnitBtn,
@@ -393,16 +400,6 @@
       .unit-name {
         font-size: 17px;
       }
-
-      .unit-item.selected {
-        border-color: #0f766e;
-        background: linear-gradient(180deg, #f0fffd 0%, #ffffff 100%);
-        box-shadow: 0 8px 18px rgba(15,118,110,0.10);
-      }
-
-      .unit-item.selected .unit-name {
-        color: #0f766e;
-      }    
     }
   </style>
 </head>
@@ -423,7 +420,6 @@
     <div id="dashboard" class="hidden">
       <div class="card">
         <h3>사업단 관리</h3>
-        <button id="clearSelectionBtn" type="button">선택 해제</button>
         <label>사업단 목록</label>
         <div class="unit-list" id="unitsList"></div>
 
@@ -513,8 +509,8 @@
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-    const supabaseUrl = 'https://yiwczbizimfhqomzqluo.supabase.co/';
-    const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlpd2N6Yml6aW1maHFvbXpxbHVvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ3NDY4NjMsImV4cCI6MjEwMDMyMjg2M30.NGro1XNH-LEIdCyGs0BhLmN2VW21CXsqJyThJIiuOAM';
+    const supabaseUrl = '';
+    const supabaseAnonKey = '';
     const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
     const loginCard = document.getElementById('loginCard');
@@ -551,9 +547,6 @@
     const downloadCsvBtn = document.getElementById('downloadCsvBtn');
     const submissionsBody = document.getElementById('submissionsBody');
 
-    const clearSelectionBtn = document.getElementById('clearSelectionBtn');
-    clearSelectionBtn.addEventListener('click', clearSelection);
-    
     let unitsCache = [];
     let selectedUnitId = '';
     let submissionsCache = [];
@@ -639,10 +632,16 @@
         const actions = document.createElement('div');
         actions.className = 'unit-actions';
 
-        const selectBtn = document.createElement('button');
-        selectBtn.type = 'button';
-        selectBtn.textContent = '선택';
-        selectBtn.addEventListener('click', () => selectUnit(unit.id));
+        const toggleBtn = document.createElement('button');
+        toggleBtn.type = 'button';
+        toggleBtn.textContent = unit.id === selectedUnitId ? '선택 해제' : '선택';
+        toggleBtn.addEventListener('click', () => {
+          if (unit.id === selectedUnitId) {
+            clearSelection();
+          } else {
+            selectUnit(unit.id);
+          }
+        });
 
         const renameBtn = document.createElement('button');
         renameBtn.type = 'button';
@@ -654,7 +653,7 @@
         deleteBtn.textContent = '삭제';
         deleteBtn.addEventListener('click', () => deleteBusinessUnitInline(unit.id, unit.name));
 
-        actions.appendChild(selectBtn);
+        actions.appendChild(toggleBtn);
         actions.appendChild(renameBtn);
         actions.appendChild(deleteBtn);
 

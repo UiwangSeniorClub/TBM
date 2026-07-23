@@ -17,11 +17,16 @@
     th, td { border:1px solid #ddd; padding:8px; vertical-align: top; }
     th { background:#f5f5f5; }
     .qrow { border:1px solid #eee; padding:10px; margin-top:10px; border-radius:6px; }
-    .small { font-size: 12px; color:#666; }
     button { cursor:pointer; }
+    .topbar { display:flex; justify-content:flex-end; margin-bottom:12px; }
+    .topbar button { width:auto; }
   </style>
 </head>
 <body>
+  <div class="topbar">
+    <button id="logoutBtn" type="button">로그아웃</button>
+  </div>
+
   <h2>관리자 페이지</h2>
 
   <div id="loginCard" class="card">
@@ -38,6 +43,16 @@
     </div>
 
     <div class="card">
+      <h3>장소 추가</h3>
+      <label>사업단 선택</label>
+      <select id="locationUnitSelect"></select>
+
+      <label>장소명</label>
+      <input id="newLocationName" type="text" placeholder="예: 카페 1층" />
+      <button id="addLocationBtn">장소 추가</button>
+    </div>
+
+    <div class="card">
       <h3>체크리스트 새 버전 저장</h3>
       <label>사업단 선택</label>
       <select id="editorUnitSelect"></select>
@@ -49,8 +64,8 @@
       <textarea id="introText" rows="10" placeholder="안내문 입력"></textarea>
 
       <div class="row" style="margin-top:10px;">
-        <button id="loadCurrentBtn">현재 버전 불러오기</button>
-        <button id="addQuestionBtn">질문 추가</button>
+        <button id="loadCurrentBtn" type="button">현재 버전 불러오기</button>
+        <button id="addQuestionBtn" type="button">질문 추가</button>
       </div>
 
       <div id="questionEditor"></div>
@@ -59,12 +74,17 @@
     </div>
 
     <div class="card">
-      <h3>제출 내역</h3>
+      <h3>제출 내역 조회</h3>
       <div class="row">
-        <select id="filterUnit"></select>
-        <button id="loadSubmissionsBtn">조회</button>
-        <button id="downloadCsvBtn">CSV 다운로드</button>
+        <input id="startDate" type="date" />
+        <input id="endDate" type="date" />
       </div>
+      <div class="row" style="margin-top:10px;">
+        <select id="filterUnit"></select>
+        <button id="loadSubmissionsBtn" type="button">조회</button>
+        <button id="downloadCsvBtn" type="button">CSV 다운로드</button>
+      </div>
+
       <div style="overflow:auto; margin-top:12px;">
         <table>
           <thead>
@@ -89,17 +109,22 @@
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-    const supabaseUrl = 'https://yiwczbizimfhqomzqluo.supabase.co';
-    const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlpd2N6Yml6aW1maHFvbXpxbHVvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ3NDY4NjMsImV4cCI6MjEwMDMyMjg2M30.NGro1XNH-LEIdCyGs0BhLmN2VW21CXsqJyThJIiuOAM';
+    const supabaseUrl = 'YOUR_SUPABASE_URL';
+    const supabaseAnonKey = 'YOUR_SUPABASE_ANON_KEY';
     const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
     const loginCard = document.getElementById('loginCard');
     const dashboard = document.getElementById('dashboard');
     const adminPassword = document.getElementById('adminPassword');
     const loginBtn = document.getElementById('loginBtn');
+    const logoutBtn = document.getElementById('logoutBtn');
 
     const newUnitName = document.getElementById('newUnitName');
     const addUnitBtn = document.getElementById('addUnitBtn');
+
+    const locationUnitSelect = document.getElementById('locationUnitSelect');
+    const newLocationName = document.getElementById('newLocationName');
+    const addLocationBtn = document.getElementById('addLocationBtn');
 
     const editorUnitSelect = document.getElementById('editorUnitSelect');
     const templateTitle = document.getElementById('templateTitle');
@@ -110,12 +135,12 @@
     const saveTemplateBtn = document.getElementById('saveTemplateBtn');
 
     const filterUnit = document.getElementById('filterUnit');
+    const startDate = document.getElementById('startDate');
+    const endDate = document.getElementById('endDate');
     const loadSubmissionsBtn = document.getElementById('loadSubmissionsBtn');
     const downloadCsvBtn = document.getElementById('downloadCsvBtn');
     const submissionsBody = document.getElementById('submissionsBody');
 
-    let currentTemplateId = null;
-    let currentQuestions = [];
     let submissionsCache = [];
 
     function escapeCsv(value) {
@@ -162,7 +187,7 @@
 
     async function checkPassword() {
       const entered = adminPassword.value.trim();
-      if (!entered) return alert('비밀번호 입력');
+      if (!entered) return alert('비밀번호를 입력하세요.');
 
       const { data, error } = await supabase
         .from('admin_settings')
@@ -189,15 +214,30 @@
       if (error) return alert('사업단 조회 실패: ' + error.message);
 
       editorUnitSelect.innerHTML = '';
+      locationUnitSelect.innerHTML = '';
       filterUnit.innerHTML = '<option value="">전체</option>';
+
+      if (!data || data.length === 0) {
+        editorUnitSelect.innerHTML = '<option value="">등록된 사업단 없음</option>';
+        locationUnitSelect.innerHTML = '<option value="">등록된 사업단 없음</option>';
+        return;
+      }
+
       data.forEach(u => {
         const o1 = document.createElement('option');
-        o1.value = u.id; o1.textContent = u.name;
+        o1.value = u.id;
+        o1.textContent = u.name;
         editorUnitSelect.appendChild(o1);
 
         const o2 = document.createElement('option');
-        o2.value = u.id; o2.textContent = u.name;
-        filterUnit.appendChild(o2);
+        o2.value = u.id;
+        o2.textContent = u.name;
+        locationUnitSelect.appendChild(o2);
+
+        const o3 = document.createElement('option');
+        o3.value = u.id;
+        o3.textContent = u.name;
+        filterUnit.appendChild(o3);
       });
     }
 
@@ -217,8 +257,6 @@
       if (error) return alert('템플릿 조회 실패: ' + error.message);
 
       questionEditor.innerHTML = '';
-      currentTemplateId = template?.id || null;
-      currentQuestions = [];
 
       if (!template) {
         templateTitle.value = '';
@@ -239,8 +277,8 @@
 
       if (qErr) return alert('문항 조회 실패: ' + qErr.message);
 
-      currentQuestions = questions || [];
-      currentQuestions.forEach(q => addQuestionRow(q));
+      questionEditor.innerHTML = '';
+      (questions || []).forEach(q => addQuestionRow(q));
     }
 
     async function saveNewVersion() {
@@ -268,7 +306,7 @@
         questions
       };
 
-      const { data, error } = await supabase.rpc('save_template_version', { payload });
+      const { error } = await supabase.rpc('save_template_version', { payload });
       if (error) return alert('저장 실패: ' + error.message);
 
       alert('새 버전 저장 완료');
@@ -277,20 +315,36 @@
 
     async function addBusinessUnit() {
       const name = newUnitName.value.trim();
-      if (!name) return alert('사업단명 입력');
+      if (!name) return alert('사업단명을 입력하세요.');
 
       const { error } = await supabase
         .from('business_units')
         .insert([{ name }]);
 
       if (error) return alert('사업단 추가 실패: ' + error.message);
+
       newUnitName.value = '';
       await loadUnits();
     }
 
-    async function loadSubmissions() {
-      const unitId = filterUnit.value;
+    async function addLocation() {
+      const businessUnitId = locationUnitSelect.value;
+      const name = newLocationName.value.trim();
 
+      if (!businessUnitId) return alert('사업단을 선택하세요.');
+      if (!name) return alert('장소명을 입력하세요.');
+
+      const { error } = await supabase
+        .from('business_locations')
+        .insert([{ business_unit_id: businessUnitId, name }]);
+
+      if (error) return alert('장소 추가 실패: ' + error.message);
+
+      newLocationName.value = '';
+      alert('장소 추가 완료');
+    }
+
+    async function loadSubmissions() {
       let query = supabase
         .from('submission_answers')
         .select(`
@@ -312,8 +366,16 @@
         `)
         .order('created_at', { ascending: true });
 
-      if (unitId) {
-        query = query.eq('submissions.business_unit_id', unitId);
+      if (filterUnit.value) {
+        query = query.eq('submissions.business_unit_id', filterUnit.value);
+      }
+
+      if (startDate.value) {
+        query = query.gte('submissions.work_datetime', new Date(startDate.value + 'T00:00:00').toISOString());
+      }
+
+      if (endDate.value) {
+        query = query.lte('submissions.work_datetime', new Date(endDate.value + 'T23:59:59.999').toISOString());
       }
 
       const { data, error } = await query;
@@ -383,7 +445,13 @@
       if (e.key === 'Enter') checkPassword();
     });
 
+    logoutBtn.addEventListener('click', () => {
+      localStorage.removeItem('tbm_admin_ok');
+      location.reload();
+    });
+
     addUnitBtn.addEventListener('click', addBusinessUnit);
+    addLocationBtn.addEventListener('click', addLocation);
     loadCurrentBtn.addEventListener('click', loadCurrentTemplate);
     addQuestionBtn.addEventListener('click', () => addQuestionRow());
     saveTemplateBtn.addEventListener('click', saveNewVersion);

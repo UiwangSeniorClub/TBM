@@ -33,6 +33,11 @@
       display:inline-block; padding:3px 8px; border-radius:999px;
       background:#e8f0ff; color:#245; font-size:12px; margin-left:8px;
     }
+    .section-title {
+      font-size: 22px;
+      font-weight: 700;
+      margin: 0 0 12px 0;
+    }
     ul { margin: 8px 0 0 20px; }
   </style>
 </head>
@@ -51,39 +56,36 @@
 
   <div id="dashboard" class="hidden">
 
-    <!-- 사업단 목록 -->
+    <!-- 사업단 관리 -->
     <div class="card">
-      <h3>사업단 목록</h3>
-      <div class="row">
-        <button id="refreshUnitsBtn" type="button">목록 새로고침</button>
-        <button id="clearSelectionBtn" type="button">선택 해제</button>
-      </div>
-      <div id="unitsList" class="unit-list"></div>
-    </div>
+      <h3>사업단 관리</h3>
 
-    <!-- 사업단 추가 -->
-    <div class="card">
-      <h3>사업단 추가</h3>
+      <label>사업단 목록</label>
+      <div class="unit-list" id="unitsList"></div>
+
+      <label style="margin-top:18px;">사업단 추가</label>
       <input id="newUnitName" type="text" placeholder="새 사업단명" />
       <button id="addUnitBtn" type="button">사업단 추가</button>
+
+      <label style="margin-top:18px;">선택된 사업단</label>
+      <div id="selectedUnitText" class="small">선택된 사업단 없음</div>
+
+      <label>사업단 이름 수정</label>
+      <input id="unitNameInput" type="text" placeholder="선택한 사업단 이름" />
+      <div class="row">
+        <button id="renameUnitBtn" type="button">이름 저장</button>
+        <button id="deleteUnitBtn" type="button">사업단 삭제</button>
+      </div>
+      <div class="small">
+        사업단을 삭제하면 관련 장소, 체크리스트, 제출기록, 답변이 모두 삭제됩니다.
+      </div>
     </div>
 
     <!-- 선택한 사업단 상세 -->
     <div id="detailsSection" class="hidden">
 
       <div class="card">
-        <h3>선택된 사업단</h3>
-        <div id="selectedUnitLabel" style="font-weight:bold; font-size:16px;"></div>
-
-        <label>사업단 이름 수정</label>
-        <input id="unitNameInput" type="text" placeholder="선택한 사업단 이름" />
-        <div class="row">
-          <button id="renameUnitBtn" type="button">이름 저장</button>
-          <button id="deleteUnitBtn" type="button">사업단 삭제</button>
-        </div>
-        <div class="small">
-          사업단을 삭제하면 관련 장소, 체크리스트, 제출기록, 답변이 모두 삭제됩니다.
-        </div>
+        <div class="section-title" id="selectedUnitLabel">사업단</div>
       </div>
 
       <div class="card">
@@ -161,14 +163,12 @@
     const loginBtn = document.getElementById('loginBtn');
     const logoutBtn = document.getElementById('logoutBtn');
 
-    const refreshUnitsBtn = document.getElementById('refreshUnitsBtn');
-    const clearSelectionBtn = document.getElementById('clearSelectionBtn');
     const unitsList = document.getElementById('unitsList');
-
     const newUnitName = document.getElementById('newUnitName');
     const addUnitBtn = document.getElementById('addUnitBtn');
 
     const detailsSection = document.getElementById('detailsSection');
+    const selectedUnitText = document.getElementById('selectedUnitText');
     const selectedUnitLabel = document.getElementById('selectedUnitLabel');
     const unitNameInput = document.getElementById('unitNameInput');
     const renameUnitBtn = document.getElementById('renameUnitBtn');
@@ -319,6 +319,8 @@
       selectedUnitId = '';
       renderUnitsList();
       setDetailsVisible(false);
+      selectedUnitText.textContent = '선택된 사업단 없음';
+      selectedUnitLabel.textContent = '사업단';
       unitNameInput.value = '';
       locationsList.innerHTML = '';
       templateTitle.value = '';
@@ -343,12 +345,12 @@
         return;
       }
 
+      selectedUnitText.textContent = `선택된 사업단: ${unit.name}`;
       selectedUnitLabel.textContent = unit.name;
       unitNameInput.value = unit.name;
 
       await loadLocations();
       await loadCurrentTemplate();
-      await loadSubmissions();
       renderUnitsList();
     }
 
@@ -624,9 +626,6 @@
       localStorage.removeItem('tbm_admin_ok');
       location.reload();
     });
-
-    refreshUnitsBtn.addEventListener('click', loadUnits);
-    clearSelectionBtn.addEventListener('click', clearSelection);
 
     addUnitBtn.addEventListener('click', addBusinessUnit);
     renameUnitBtn.addEventListener('click', renameBusinessUnit);

@@ -20,6 +20,8 @@
     button { cursor:pointer; }
     .topbar { display:flex; justify-content:flex-end; margin-bottom:12px; }
     .topbar button { width:auto; }
+    .small { color:#666; font-size:12px; margin-top:8px; line-height:1.4; }
+    ul { margin: 8px 0 0 20px; }
   </style>
 </head>
 <body>
@@ -37,26 +39,38 @@
 
   <div id="dashboard" class="hidden">
     <div class="card">
-      <h3>사업단 추가</h3>
-      <input id="newUnitName" type="text" placeholder="사업단명" />
-      <button id="addUnitBtn">추가</button>
+      <h3>사업단 관리</h3>
+
+      <label>사업단 추가</label>
+      <input id="newUnitName" type="text" placeholder="새 사업단명" />
+      <button id="addUnitBtn" type="button">사업단 추가</button>
+
+      <label style="margin-top:18px;">사업단 선택</label>
+      <select id="selectedUnitSelect"></select>
+
+      <label>사업단 이름 수정</label>
+      <input id="unitNameInput" type="text" placeholder="선택한 사업단 이름" />
+      <div class="row">
+        <button id="renameUnitBtn" type="button">이름 저장</button>
+        <button id="deleteUnitBtn" type="button">사업단 삭제</button>
+      </div>
+      <div class="small">
+        사업단을 삭제하면 관련 장소, 체크리스트, 제출기록, 답변이 모두 삭제됩니다.
+      </div>
     </div>
 
     <div class="card">
-      <h3>장소 추가</h3>
-      <label>사업단 선택</label>
-      <select id="locationUnitSelect"></select>
+      <h3>장소 관리</h3>
+      <label>현재 등록된 장소</label>
+      <ul id="locationsList"></ul>
 
-      <label>장소명</label>
+      <label style="margin-top:18px;">장소 추가</label>
       <input id="newLocationName" type="text" placeholder="예: 카페 1층" />
-      <button id="addLocationBtn">장소 추가</button>
+      <button id="addLocationBtn" type="button">장소 추가</button>
     </div>
 
     <div class="card">
-      <h3>체크리스트 새 버전 저장</h3>
-      <label>사업단 선택</label>
-      <select id="editorUnitSelect"></select>
-
+      <h3>체크리스트 관리</h3>
       <label>제목</label>
       <input id="templateTitle" type="text" placeholder="예: 카페 사업단 작업 전 안전점검" />
 
@@ -80,7 +94,6 @@
         <input id="endDate" type="date" />
       </div>
       <div class="row" style="margin-top:10px;">
-        <select id="filterUnit"></select>
         <button id="loadSubmissionsBtn" type="button">조회</button>
         <button id="downloadCsvBtn" type="button">CSV 다운로드</button>
       </div>
@@ -121,12 +134,15 @@
 
     const newUnitName = document.getElementById('newUnitName');
     const addUnitBtn = document.getElementById('addUnitBtn');
+    const selectedUnitSelect = document.getElementById('selectedUnitSelect');
+    const unitNameInput = document.getElementById('unitNameInput');
+    const renameUnitBtn = document.getElementById('renameUnitBtn');
+    const deleteUnitBtn = document.getElementById('deleteUnitBtn');
 
-    const locationUnitSelect = document.getElementById('locationUnitSelect');
+    const locationsList = document.getElementById('locationsList');
     const newLocationName = document.getElementById('newLocationName');
     const addLocationBtn = document.getElementById('addLocationBtn');
 
-    const editorUnitSelect = document.getElementById('editorUnitSelect');
     const templateTitle = document.getElementById('templateTitle');
     const introText = document.getElementById('introText');
     const questionEditor = document.getElementById('questionEditor');
@@ -134,7 +150,6 @@
     const loadCurrentBtn = document.getElementById('loadCurrentBtn');
     const saveTemplateBtn = document.getElementById('saveTemplateBtn');
 
-    const filterUnit = document.getElementById('filterUnit');
     const startDate = document.getElementById('startDate');
     const endDate = document.getElementById('endDate');
     const loadSubmissionsBtn = document.getElementById('loadSubmissionsBtn');
@@ -205,45 +220,174 @@
       await initAdmin();
     }
 
-    async function loadUnits() {
+    async function loadUnits(keepSelected = true) {
+      const prevSelected = keepSelected ? selectedUnitSelect.value : '';
+
       const { data, error } = await supabase
         .from('business_units')
         .select('*')
+        .eq('active', true)
         .order('name', { ascending: true });
 
       if (error) return alert('사업단 조회 실패: ' + error.message);
 
-      editorUnitSelect.innerHTML = '';
-      locationUnitSelect.innerHTML = '';
-      filterUnit.innerHTML = '<option value="">전체</option>';
+      selectedUnitSelect.innerHTML = '<option value="">사업단 선택</option>';
 
       if (!data || data.length === 0) {
-        editorUnitSelect.innerHTML = '<option value="">등록된 사업단 없음</option>';
-        locationUnitSelect.innerHTML = '<option value="">등록된 사업단 없음</option>';
+        selectedUnitSelect.innerHTML = '<option value="">등록된 사업단 없음</option>';
+        unitNameInput.value = '';
+        locationsList.innerHTML = '';
         return;
       }
 
       data.forEach(u => {
-        const o1 = document.createElement('option');
-        o1.value = u.id;
-        o1.textContent = u.name;
-        editorUnitSelect.appendChild(o1);
+        const opt = document.createElement('option');
+        opt.value = u.id;
+        opt.textContent = u.name;
+        selectedUnitSelect.appendChild(opt);
+      });
 
-        const o2 = document.createElement('option');
-        o2.value = u.id;
-        o2.textContent = u.name;
-        locationUnitSelect.appendChild(o2);
+      if (prevSelected && [...selectedUnitSelect.options].some(o => o.value === prevSelected)) {
+        selectedUnitSelect.value = prevSelected;
+      } else {
+        selectedUnitSelect.value = '';
+        unitNameInput.value = '';
+        locationsList.innerHTML = '';
+      }
+    }
 
-        const o3 = document.createElement('option');
-        o3.value = u.id;
-        o3.textContent = u.name;
-        filterUnit.appendChild(o3);
+    async function loadSelectedUnitDetails() {
+      const unitId = selectedUnitSelect.value;
+
+      if (!unitId) {
+        unitNameInput.value = '';
+        locationsList.innerHTML = '';
+        templateTitle.value = '';
+        introText.value = '';
+        questionEditor.innerHTML = '';
+        submissionsBody.innerHTML = '';
+        return;
+      }
+
+      const { data: unit, error: unitErr } = await supabase
+        .from('business_units')
+        .select('*')
+        .eq('id', unitId)
+        .maybeSingle();
+
+      if (unitErr) return alert('사업단 정보 불러오기 실패: ' + unitErr.message);
+
+      unitNameInput.value = unit?.name || '';
+      await loadLocations();
+      await loadCurrentTemplate();
+    }
+
+    async function addBusinessUnit() {
+      const name = newUnitName.value.trim();
+      if (!name) return alert('사업단명을 입력하세요.');
+
+      const { error } = await supabase
+        .from('business_units')
+        .insert([{ name }]);
+
+      if (error) return alert('사업단 추가 실패: ' + error.message);
+
+      newUnitName.value = '';
+      await loadUnits(false);
+      alert('사업단 추가 완료');
+    }
+
+    async function renameBusinessUnit() {
+      const unitId = selectedUnitSelect.value;
+      const name = unitNameInput.value.trim();
+
+      if (!unitId) return alert('사업단을 선택하세요.');
+      if (!name) return alert('이름을 입력하세요.');
+
+      const { error } = await supabase
+        .from('business_units')
+        .update({ name })
+        .eq('id', unitId);
+
+      if (error) return alert('사업단 이름 수정 실패: ' + error.message);
+
+      await loadUnits();
+      selectedUnitSelect.value = unitId;
+      await loadSelectedUnitDetails();
+      alert('사업단 이름 수정 완료');
+    }
+
+    async function deleteBusinessUnit() {
+      const unitId = selectedUnitSelect.value;
+      if (!unitId) return alert('사업단을 선택하세요.');
+
+      const confirmMsg = '사업단을 삭제하면 관련 장소, 체크리스트, 제출기록, 답변이 모두 삭제됩니다. 정말 삭제할까요?';
+      if (!confirm(confirmMsg)) return;
+
+      const { error } = await supabase.rpc('delete_business_unit', { p_id: unitId });
+      if (error) return alert('사업단 삭제 실패: ' + error.message);
+
+      selectedUnitSelect.value = '';
+      await loadUnits(false);
+      await loadSelectedUnitDetails();
+      alert('사업단 삭제 완료');
+    }
+
+    async function loadLocations() {
+      const unitId = selectedUnitSelect.value;
+      if (!unitId) {
+        locationsList.innerHTML = '';
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from('business_locations')
+        .select('*')
+        .eq('business_unit_id', unitId)
+        .eq('active', true)
+        .order('name', { ascending: true });
+
+      if (error) return alert('장소 조회 실패: ' + error.message);
+
+      locationsList.innerHTML = '';
+      if (!data || data.length === 0) {
+        locationsList.innerHTML = '<li>등록된 장소 없음</li>';
+        return;
+      }
+
+      data.forEach(loc => {
+        const li = document.createElement('li');
+        li.textContent = loc.name;
+        locationsList.appendChild(li);
       });
     }
 
-    async function loadCurrentTemplate() {
-      const unitId = editorUnitSelect.value;
+    async function addLocation() {
+      const unitId = selectedUnitSelect.value;
+      const name = newLocationName.value.trim();
+
       if (!unitId) return alert('사업단을 선택하세요.');
+      if (!name) return alert('장소명을 입력하세요.');
+
+      const { error } = await supabase
+        .from('business_locations')
+        .insert([{ business_unit_id: unitId, name }]);
+
+      if (error) return alert('장소 추가 실패: ' + error.message);
+
+      newLocationName.value = '';
+      await loadLocations();
+      alert('장소 추가 완료');
+    }
+
+    async function loadCurrentTemplate() {
+      const unitId = selectedUnitSelect.value;
+      if (!unitId) {
+        templateTitle.value = '';
+        introText.value = '';
+        questionEditor.innerHTML = '';
+        return;
+      }
 
       const { data: template, error } = await supabase
         .from('checklist_templates')
@@ -282,8 +426,8 @@
     }
 
     async function saveNewVersion() {
-      const unitId = editorUnitSelect.value;
-      if (!unitId) return alert('사업단 선택');
+      const unitId = selectedUnitSelect.value;
+      if (!unitId) return alert('사업단을 선택하세요.');
       if (!templateTitle.value.trim()) return alert('제목 입력');
       if (!introText.value.trim()) return alert('안내문 입력');
 
@@ -313,38 +457,10 @@
       await loadCurrentTemplate();
     }
 
-    async function addBusinessUnit() {
-      const name = newUnitName.value.trim();
-      if (!name) return alert('사업단명을 입력하세요.');
-
-      const { error } = await supabase
-        .from('business_units')
-        .insert([{ name }]);
-
-      if (error) return alert('사업단 추가 실패: ' + error.message);
-
-      newUnitName.value = '';
-      await loadUnits();
-    }
-
-    async function addLocation() {
-      const businessUnitId = locationUnitSelect.value;
-      const name = newLocationName.value.trim();
-
-      if (!businessUnitId) return alert('사업단을 선택하세요.');
-      if (!name) return alert('장소명을 입력하세요.');
-
-      const { error } = await supabase
-        .from('business_locations')
-        .insert([{ business_unit_id: businessUnitId, name }]);
-
-      if (error) return alert('장소 추가 실패: ' + error.message);
-
-      newLocationName.value = '';
-      alert('장소 추가 완료');
-    }
-
     async function loadSubmissions() {
+      const unitId = selectedUnitSelect.value;
+      if (!unitId) return alert('사업단을 선택하세요.');
+
       let query = supabase
         .from('submission_answers')
         .select(`
@@ -364,11 +480,8 @@
           ),
           checklist_questions(question_text)
         `)
+        .eq('submissions.business_unit_id', unitId)
         .order('created_at', { ascending: true });
-
-      if (filterUnit.value) {
-        query = query.eq('submissions.business_unit_id', filterUnit.value);
-      }
 
       if (startDate.value) {
         query = query.gte('submissions.work_datetime', new Date(startDate.value + 'T00:00:00').toISOString());
@@ -436,8 +549,8 @@
     }
 
     async function initAdmin() {
-      await loadUnits();
-      if (editorUnitSelect.value) await loadCurrentTemplate();
+      await loadUnits(false);
+      await loadSelectedUnitDetails();
     }
 
     loginBtn.addEventListener('click', checkPassword);
@@ -451,12 +564,16 @@
     });
 
     addUnitBtn.addEventListener('click', addBusinessUnit);
+    renameUnitBtn.addEventListener('click', renameBusinessUnit);
+    deleteUnitBtn.addEventListener('click', deleteBusinessUnit);
     addLocationBtn.addEventListener('click', addLocation);
     loadCurrentBtn.addEventListener('click', loadCurrentTemplate);
     addQuestionBtn.addEventListener('click', () => addQuestionRow());
     saveTemplateBtn.addEventListener('click', saveNewVersion);
     loadSubmissionsBtn.addEventListener('click', loadSubmissions);
     downloadCsvBtn.addEventListener('click', downloadCsv);
+
+    selectedUnitSelect.addEventListener('change', loadSelectedUnitDetails);
 
     if (localStorage.getItem('tbm_admin_ok') === '1') {
       loginCard.classList.add('hidden');

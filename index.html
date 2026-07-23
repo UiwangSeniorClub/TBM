@@ -375,6 +375,31 @@
       .big-title {
         font-size: 20px;
       }
+
+      html, body {
+        overflow-x: hidden;
+      }
+
+      .page,
+      .card,
+      .hero,
+      .readbox,
+      .question,
+      .field-grid,
+      .question-list {
+        min-width: 0;
+      }
+
+      .intro-text,
+      .question-title,
+      .hero h1 {
+        overflow-wrap: anywhere;
+        word-break: keep-all;
+      }
+
+      .card {
+        width: 100%;
+      }
     }
   </style>
 </head>

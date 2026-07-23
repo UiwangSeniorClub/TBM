@@ -5,64 +5,430 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>의왕시니어클럽 안전확인 일지 (TBM)</title>
   <style>
-    body { font-family: Arial, sans-serif; max-width: 900px; margin: 0 auto; padding: 16px; }
-    .card { border: 1px solid #ddd; border-radius: 8px; padding: 16px; margin-bottom: 16px; }
-    label { display:block; margin-top: 10px; font-weight: bold; }
-    input, select, textarea, button { width: 100%; padding: 10px; margin-top: 6px; box-sizing: border-box; }
-    textarea { resize: vertical; }
-    .radio-group { display:flex; gap:12px; margin-top: 8px; flex-wrap: wrap; }
-    .radio-group label { font-weight: normal; margin-top: 0; }
-    .question { border-top: 1px dashed #ddd; padding-top: 12px; margin-top: 12px; }
-    .hidden { display:none; }
-    .muted { color:#666; white-space: pre-wrap; line-height: 1.5; }
-    button { cursor:pointer; }
-    .topbar { display:flex; justify-content:flex-end; margin-bottom:12px; }
-    .topbar button { width:auto; }
+    :root{
+      --bg: #f4f7fb;
+      --card: #ffffff;
+      --line: #dbe4ee;
+      --text: #1f2a37;
+      --muted: #667085;
+
+      --navy: #17324d;
+      --teal: #0f766e;
+      --teal-weak: #e6fffb;
+
+      --green: #2e7d32;
+      --green-bg: #e8f5e9;
+
+      --red: #b42318;
+      --red-bg: #ffebee;
+
+      --amber: #b45309;
+      --amber-bg: #fff7ed;
+
+      --shadow: 0 8px 24px rgba(16, 24, 40, 0.08);
+      --radius: 18px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "Pretendard", "Noto Sans KR", Arial, sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(15,118,110,0.10), transparent 32%),
+        radial-gradient(circle at top right, rgba(23,50,77,0.08), transparent 25%),
+        var(--bg);
+      color: var(--text);
+    }
+
+    .page {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 20px 16px 40px;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: flex-end;
+      margin-bottom: 14px;
+    }
+
+    .topbar button {
+      width: auto;
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--navy);
+      border-radius: 999px;
+      padding: 10px 16px;
+      font-weight: 700;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+
+    .hero {
+      background: linear-gradient(135deg, #17324d 0%, #0f766e 100%);
+      color: #fff;
+      border-radius: 24px;
+      padding: 22px 22px 20px;
+      box-shadow: var(--shadow);
+      margin-bottom: 18px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      right: -40px;
+      top: -40px;
+      width: 180px;
+      height: 180px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 50%;
+    }
+
+    .hero-badge {
+      display: inline-block;
+      background: rgba(255,255,255,0.14);
+      border: 1px solid rgba(255,255,255,0.18);
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.2px;
+      margin-bottom: 10px;
+    }
+
+    .hero h1 {
+      margin: 0;
+      font-size: clamp(24px, 4vw, 34px);
+      line-height: 1.25;
+      letter-spacing: -0.02em;
+    }
+
+    .hero p {
+      margin: 10px 0 0;
+      color: rgba(255,255,255,0.84);
+      font-size: 14px;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 18px;
+      margin-bottom: 16px;
+      box-shadow: var(--shadow);
+    }
+
+    .section-title {
+      margin: 0 0 12px;
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--navy);
+      letter-spacing: -0.01em;
+    }
+
+    .field-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .field.full {
+      grid-column: 1 / -1;
+    }
+
+    label {
+      font-size: 14px;
+      font-weight: 800;
+      color: #344054;
+    }
+
+    input, select, textarea, button {
+      width: 100%;
+      font: inherit;
+    }
+
+    input, select, textarea {
+      border: 1px solid #cfd8e3;
+      background: #fff;
+      border-radius: 12px;
+      padding: 12px 14px;
+      color: var(--text);
+      transition: border-color .15s, box-shadow .15s, transform .1s;
+      outline: none;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--teal);
+      box-shadow: 0 0 0 4px rgba(15,118,110,0.12);
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 110px;
+      line-height: 1.6;
+    }
+
+    .hint {
+      color: var(--muted);
+      font-size: 13px;
+      margin-top: 2px;
+    }
+
+    .readbox {
+      background: linear-gradient(180deg, #fbfdff 0%, #f8fbff 100%);
+      border: 1px solid #d8e3ee;
+      border-radius: 16px;
+      padding: 16px 16px 14px;
+    }
+
+    .intro-text {
+      margin: 0;
+      white-space: pre-wrap;
+      line-height: 1.75;
+      font-size: 15px;
+      color: #334155;
+    }
+
+    .big-title {
+      font-size: 22px;
+      font-weight: 900;
+      color: var(--navy);
+      margin-bottom: 12px;
+      letter-spacing: -0.02em;
+    }
+
+    .question-list {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .question {
+      border: 1px solid #dde7f1;
+      background: #fff;
+      border-radius: 16px;
+      padding: 14px;
+    }
+
+    .question-title {
+      font-size: 16px;
+      font-weight: 800;
+      color: #20324a;
+      line-height: 1.45;
+      margin-bottom: 12px;
+    }
+
+    .required-mark {
+      color: var(--red);
+      margin-left: 4px;
+      font-weight: 900;
+    }
+
+    .radio-group {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+    }
+
+    .choice {
+      flex: 1 1 140px;
+      border: 1px solid #d6dde7;
+      border-radius: 14px;
+      padding: 0;
+      overflow: hidden;
+      cursor: pointer;
+      transition: transform .08s, box-shadow .15s, border-color .15s;
+      background: #fff;
+      min-height: 48px;
+      display: flex;
+      align-items: stretch;
+    }
+
+    .choice:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px rgba(16,24,40,0.08);
+    }
+
+    .choice input {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .choice span {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 12px 14px;
+      font-weight: 800;
+      color: #344054;
+      user-select: none;
+      gap: 8px;
+    }
+
+    .choice-yes input:checked + span {
+      background: var(--green-bg);
+      color: var(--green);
+      box-shadow: inset 0 0 0 1px rgba(46,125,50,0.25);
+    }
+
+    .choice-no input:checked + span {
+      background: var(--red-bg);
+      color: var(--red);
+      box-shadow: inset 0 0 0 1px rgba(180,35,24,0.25);
+    }
+
+    .choice-yes span::before {
+      content: "✔";
+      font-size: 12px;
+      opacity: .8;
+    }
+
+    .choice-no span::before {
+      content: "✕";
+      font-size: 12px;
+      opacity: .8;
+    }
+
+    .correction-wrap {
+      margin-top: 10px;
+      background: var(--amber-bg);
+      border: 1px solid #f3d3b0;
+      border-radius: 14px;
+      padding: 12px;
+    }
+
+    .correction-wrap label {
+      color: #9a4d00;
+      font-size: 13px;
+    }
+
+    .hidden { display: none; }
+
+    .submit-wrap {
+      margin-top: 8px;
+    }
+
+    .submit-btn {
+      border: none;
+      border-radius: 14px;
+      background: linear-gradient(135deg, var(--teal) 0%, #0b5f75 100%);
+      color: #fff;
+      font-weight: 900;
+      font-size: 16px;
+      padding: 14px 16px;
+      box-shadow: 0 10px 20px rgba(15,118,110,0.20);
+    }
+
+    .submit-btn:hover {
+      filter: brightness(1.03);
+    }
+
+    .footer-note {
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 12px;
+      text-align: center;
+    }
+
+    @media (max-width: 720px) {
+      .field-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .choice {
+        flex: 1 1 100%;
+      }
+
+      .hero {
+        padding: 18px;
+      }
+
+      .card {
+        padding: 16px;
+      }
+
+      .big-title {
+        font-size: 20px;
+      }
+    }
   </style>
 </head>
 <body>
-  <div class="topbar">
-    <a href="admin.html" style="text-decoration:none;">
-      <button type="button">관리자 페이지</button>
-    </a>
+  <div class="page">
+    <div class="topbar">
+      <a href="admin.html" style="text-decoration:none;">
+        <button type="button">관리자 페이지</button>
+      </a>
+    </div>
+
+    <div class="hero">
+      <div class="hero-badge">TBM · 안전확인</div>
+      <h1>의왕시니어클럽 안전확인 일지 (TBM)</h1>
+      <p>작업 전 안전조치 확인과 위험요인 점검을 위한 입력 화면입니다.</p>
+    </div>
+
+    <div class="card">
+      <div class="section-title">기본 정보</div>
+      <div class="field-grid">
+        <div class="field">
+          <label>사업단명</label>
+          <select id="businessUnitSelect"></select>
+        </div>
+
+        <div class="field">
+          <label>이름</label>
+          <input id="workerName" type="text" placeholder="이름 입력" />
+        </div>
+
+        <div class="field">
+          <label>일시</label>
+          <input id="workDatetime" type="datetime-local" />
+        </div>
+
+        <div class="field">
+          <label>장소</label>
+          <select id="locationSelect"></select>
+        </div>
+
+        <div class="field full">
+          <label>작업내용</label>
+          <select id="workContentSelect"></select>
+        </div>
+      </div>
+    </div>
+
+    <div class="card readbox">
+      <div class="big-title">안전점검 리스트(잠재위험요인 및 대책)</div>
+      <pre id="introText" class="intro-text"></pre>
+    </div>
+
+    <div class="card">
+      <div class="big-title">작업 전 안전조치 여부</div>
+      <div id="questionsArea" class="question-list"></div>
+    </div>
+
+    <div class="submit-wrap">
+      <button id="submitBtn" class="submit-btn">제출</button>
+      <div class="footer-note">입력 후 제출 버튼을 눌러 저장하세요.</div>
+    </div>
   </div>
-
-  <h2>의왕시니어클럽 안전확인 일지 (TBM)</h2>
-
-  <div class="card">
-    <label>사업단명</label>
-    <select id="businessUnitSelect"></select>
-
-    <label>이름</label>
-    <input id="workerName" type="text" placeholder="이름 입력" />
-
-    <label>일시</label>
-    <input id="workDatetime" type="datetime-local" />
-
-    <label>장소</label>
-    <select id="locationSelect"></select>
-
-    <label>작업내용</label>
-    <select id="workContentSelect"></select>
-  </div>
-
-  <div class="card">
-    <h3>안전점검 리스트(잠재위험요인 및 대책)</h3>
-    <pre id="introText" class="muted"></pre>
-  </div>
-
-  <div class="card">
-    <h3>작업 전 안전조치 여부</h3>
-    <div id="questionsArea"></div>
-  </div>
-
-  <button id="submitBtn">제출</button>
 
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-    const supabaseUrl = 'https://yiwczbizimfhqomzqluo.supabase.co/';
-    const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlpd2N6Yml6aW1maHFvbXpxbHVvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ3NDY4NjMsImV4cCI6MjEwMDMyMjg2M30.NGro1XNH-LEIdCyGs0BhLmN2VW21CXsqJyThJIiuOAM';
+    const supabaseUrl = 'YOUR_SUPABASE_URL';
+    const supabaseAnonKey = 'YOUR_SUPABASE_ANON_KEY';
     const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
     const businessUnitSelect = document.getElementById('businessUnitSelect');
@@ -96,20 +462,27 @@
         wrap.dataset.questionId = q.id;
 
         const title = document.createElement('div');
-        title.innerHTML = `<strong>${q.sort_order}. ${q.question_text}${q.required ? ' *' : ''}</strong>`;
+        title.className = 'question-title';
+        title.innerHTML = `${q.sort_order}. ${q.question_text}${q.required ? '<span class="required-mark">*</span>' : ''}`;
         wrap.appendChild(title);
 
         if (q.question_type === 'yesno') {
           const radio = document.createElement('div');
           radio.className = 'radio-group';
           radio.innerHTML = `
-            <label><input type="radio" name="q_${q.id}" value="예"> 예</label>
-            <label><input type="radio" name="q_${q.id}" value="아니오"> 아니오</label>
+            <label class="choice choice-yes">
+              <input type="radio" name="q_${q.id}" value="예">
+              <span>예</span>
+            </label>
+            <label class="choice choice-no">
+              <input type="radio" name="q_${q.id}" value="아니오">
+              <span>아니오</span>
+            </label>
           `;
           wrap.appendChild(radio);
 
           const correctionWrap = document.createElement('div');
-          correctionWrap.className = 'hidden';
+          correctionWrap.className = 'correction-wrap hidden';
           correctionWrap.innerHTML = `
             <label>아니오인 경우 조치 내용</label>
             <textarea rows="3" class="correction" placeholder="조치 내용 입력"></textarea>
@@ -117,9 +490,10 @@
           wrap.appendChild(correctionWrap);
 
           radio.addEventListener('change', (e) => {
-            if (e.target && e.target.value) {
-              correctionWrap.classList.toggle('hidden', e.target.value !== '아니오');
-            }
+            const selected = e.target?.value;
+            if (!selected) return;
+
+            correctionWrap.classList.toggle('hidden', selected !== '아니오');
           });
         } else {
           const ta = document.createElement('textarea');

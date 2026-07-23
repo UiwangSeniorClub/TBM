@@ -1,1 +1,400 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>관리자</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 1200px; margin: 0 auto; padding: 16px; }
+    .card { border:1px solid #ddd; border-radius:8px; padding:16px; margin-bottom:16px; }
+    label { display:block; margin-top:10px; font-weight:bold; }
+    input, select, textarea, button { width:100%; padding:10px; margin-top:6px; box-sizing:border-box; }
+    textarea { resize: vertical; }
+    .row { display:flex; gap:10px; }
+    .row > * { flex:1; }
+    .hidden { display:none; }
+    table { width:100%; border-collapse: collapse; font-size:14px; }
+    th, td { border:1px solid #ddd; padding:8px; vertical-align: top; }
+    th { background:#f5f5f5; }
+    .qrow { border:1px solid #eee; padding:10px; margin-top:10px; border-radius:6px; }
+    .small { font-size: 12px; color:#666; }
+    button { cursor:pointer; }
+  </style>
+</head>
+<body>
+  <h2>관리자 페이지</h2>
 
+  <div id="loginCard" class="card">
+    <h3>관리자 비밀번호</h3>
+    <input id="adminPassword" type="password" placeholder="비밀번호 입력" />
+    <button id="loginBtn">접속</button>
+  </div>
+
+  <div id="dashboard" class="hidden">
+    <div class="card">
+      <h3>사업단 추가</h3>
+      <input id="newUnitName" type="text" placeholder="사업단명" />
+      <button id="addUnitBtn">추가</button>
+    </div>
+
+    <div class="card">
+      <h3>체크리스트 새 버전 저장</h3>
+      <label>사업단 선택</label>
+      <select id="editorUnitSelect"></select>
+
+      <label>제목</label>
+      <input id="templateTitle" type="text" placeholder="예: 카페 사업단 작업 전 안전점검" />
+
+      <label>안내문</label>
+      <textarea id="introText" rows="10" placeholder="안내문 입력"></textarea>
+
+      <div class="row" style="margin-top:10px;">
+        <button id="loadCurrentBtn">현재 버전 불러오기</button>
+        <button id="addQuestionBtn">질문 추가</button>
+      </div>
+
+      <div id="questionEditor"></div>
+
+      <button id="saveTemplateBtn" style="margin-top:12px;">새 버전 저장</button>
+    </div>
+
+    <div class="card">
+      <h3>제출 내역</h3>
+      <div class="row">
+        <select id="filterUnit"></select>
+        <button id="loadSubmissionsBtn">조회</button>
+        <button id="downloadCsvBtn">CSV 다운로드</button>
+      </div>
+      <div style="overflow:auto; margin-top:12px;">
+        <table>
+          <thead>
+            <tr>
+              <th>사업단</th>
+              <th>이름</th>
+              <th>일시</th>
+              <th>장소</th>
+              <th>제출시각</th>
+              <th>질문</th>
+              <th>예/아니오</th>
+              <th>조치내용</th>
+              <th>주관식</th>
+            </tr>
+          </thead>
+          <tbody id="submissionsBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+    const supabaseUrl = 'YOUR_SUPABASE_URL';
+    const supabaseAnonKey = 'YOUR_SUPABASE_ANON_KEY';
+    const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
+    const loginCard = document.getElementById('loginCard');
+    const dashboard = document.getElementById('dashboard');
+    const adminPassword = document.getElementById('adminPassword');
+    const loginBtn = document.getElementById('loginBtn');
+
+    const newUnitName = document.getElementById('newUnitName');
+    const addUnitBtn = document.getElementById('addUnitBtn');
+
+    const editorUnitSelect = document.getElementById('editorUnitSelect');
+    const templateTitle = document.getElementById('templateTitle');
+    const introText = document.getElementById('introText');
+    const questionEditor = document.getElementById('questionEditor');
+    const addQuestionBtn = document.getElementById('addQuestionBtn');
+    const loadCurrentBtn = document.getElementById('loadCurrentBtn');
+    const saveTemplateBtn = document.getElementById('saveTemplateBtn');
+
+    const filterUnit = document.getElementById('filterUnit');
+    const loadSubmissionsBtn = document.getElementById('loadSubmissionsBtn');
+    const downloadCsvBtn = document.getElementById('downloadCsvBtn');
+    const submissionsBody = document.getElementById('submissionsBody');
+
+    let currentTemplateId = null;
+    let currentQuestions = [];
+    let submissionsCache = [];
+
+    function escapeCsv(value) {
+      const s = String(value ?? '');
+      return `"${s.replaceAll('"', '""')}"`;
+    }
+
+    function addQuestionRow(data = {}) {
+      const row = document.createElement('div');
+      row.className = 'qrow';
+      row.innerHTML = `
+        <label>문항</label>
+        <input class="q-text" type="text" value="${data.question_text || ''}" placeholder="질문 입력" />
+
+        <div class="row">
+          <div>
+            <label>타입</label>
+            <select class="q-type">
+              <option value="yesno">예/아니오</option>
+              <option value="text">주관식</option>
+            </select>
+          </div>
+          <div>
+            <label>필수</label>
+            <select class="q-required">
+              <option value="true">필수</option>
+              <option value="false">선택</option>
+            </select>
+          </div>
+          <div>
+            <label>순서</label>
+            <input class="q-order" type="number" value="${data.sort_order ?? 0}" />
+          </div>
+          <div style="display:flex; align-items:end;">
+            <button type="button" class="removeBtn">삭제</button>
+          </div>
+        </div>
+      `;
+      row.querySelector('.q-type').value = data.question_type || 'yesno';
+      row.querySelector('.q-required').value = String(data.required ?? true);
+      row.querySelector('.removeBtn').addEventListener('click', () => row.remove());
+      questionEditor.appendChild(row);
+    }
+
+    async function checkPassword() {
+      const entered = adminPassword.value.trim();
+      if (!entered) return alert('비밀번호 입력');
+
+      const { data, error } = await supabase
+        .from('admin_settings')
+        .select('admin_password')
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (error) return alert('비밀번호 확인 실패: ' + error.message);
+      if (!data || data.admin_password !== entered) return alert('비밀번호가 다릅니다.');
+
+      localStorage.setItem('tbm_admin_ok', '1');
+      loginCard.classList.add('hidden');
+      dashboard.classList.remove('hidden');
+      await initAdmin();
+    }
+
+    async function loadUnits() {
+      const { data, error } = await supabase
+        .from('business_units')
+        .select('*')
+        .order('name', { ascending: true });
+
+      if (error) return alert('사업단 조회 실패: ' + error.message);
+
+      editorUnitSelect.innerHTML = '';
+      filterUnit.innerHTML = '<option value="">전체</option>';
+      data.forEach(u => {
+        const o1 = document.createElement('option');
+        o1.value = u.id; o1.textContent = u.name;
+        editorUnitSelect.appendChild(o1);
+
+        const o2 = document.createElement('option');
+        o2.value = u.id; o2.textContent = u.name;
+        filterUnit.appendChild(o2);
+      });
+    }
+
+    async function loadCurrentTemplate() {
+      const unitId = editorUnitSelect.value;
+      if (!unitId) return alert('사업단을 선택하세요.');
+
+      const { data: template, error } = await supabase
+        .from('checklist_templates')
+        .select('*')
+        .eq('business_unit_id', unitId)
+        .eq('active', true)
+        .order('version', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (error) return alert('템플릿 조회 실패: ' + error.message);
+
+      questionEditor.innerHTML = '';
+      currentTemplateId = template?.id || null;
+      currentQuestions = [];
+
+      if (!template) {
+        templateTitle.value = '';
+        introText.value = '';
+        addQuestionRow({ question_type: 'yesno', required: true, sort_order: 1 });
+        return;
+      }
+
+      templateTitle.value = template.title || '';
+      introText.value = template.intro_text || '';
+
+      const { data: questions, error: qErr } = await supabase
+        .from('checklist_questions')
+        .select('*')
+        .eq('template_id', template.id)
+        .eq('active', true)
+        .order('sort_order', { ascending: true });
+
+      if (qErr) return alert('문항 조회 실패: ' + qErr.message);
+
+      currentQuestions = questions || [];
+      currentQuestions.forEach(q => addQuestionRow(q));
+    }
+
+    async function saveNewVersion() {
+      const unitId = editorUnitSelect.value;
+      if (!unitId) return alert('사업단 선택');
+      if (!templateTitle.value.trim()) return alert('제목 입력');
+      if (!introText.value.trim()) return alert('안내문 입력');
+
+      const rows = [...questionEditor.querySelectorAll('.qrow')];
+      if (rows.length === 0) return alert('질문을 1개 이상 넣으세요.');
+
+      const questions = rows.map((row, idx) => ({
+        question_text: row.querySelector('.q-text').value.trim(),
+        question_type: row.querySelector('.q-type').value,
+        required: row.querySelector('.q-required').value === 'true',
+        sort_order: Number(row.querySelector('.q-order').value || idx + 1)
+      }));
+
+      if (questions.some(q => !q.question_text)) return alert('빈 질문이 있습니다.');
+
+      const payload = {
+        business_unit_id: unitId,
+        title: templateTitle.value.trim(),
+        intro_text: introText.value.trim(),
+        questions
+      };
+
+      const { data, error } = await supabase.rpc('save_template_version', { payload });
+      if (error) return alert('저장 실패: ' + error.message);
+
+      alert('새 버전 저장 완료');
+      await loadCurrentTemplate();
+    }
+
+    async function addBusinessUnit() {
+      const name = newUnitName.value.trim();
+      if (!name) return alert('사업단명 입력');
+
+      const { error } = await supabase
+        .from('business_units')
+        .insert([{ name }]);
+
+      if (error) return alert('사업단 추가 실패: ' + error.message);
+      newUnitName.value = '';
+      await loadUnits();
+    }
+
+    async function loadSubmissions() {
+      const unitId = filterUnit.value;
+
+      let query = supabase
+        .from('submission_answers')
+        .select(`
+          id,
+          answer_yesno,
+          correction_text,
+          text_answer,
+          created_at,
+          submissions!inner(
+            id,
+            worker_name,
+            work_datetime,
+            location,
+            submitted_at,
+            business_units(name),
+            checklist_templates(title, version)
+          ),
+          checklist_questions(question_text)
+        `)
+        .order('created_at', { ascending: true });
+
+      if (unitId) {
+        query = query.eq('submissions.business_unit_id', unitId);
+      }
+
+      const { data, error } = await query;
+      if (error) return alert('제출 조회 실패: ' + error.message);
+
+      submissionsCache = data || [];
+      renderSubmissionTable();
+    }
+
+    function renderSubmissionTable() {
+      submissionsBody.innerHTML = '';
+      submissionsCache.forEach(r => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${r.submissions?.business_units?.name || ''}</td>
+          <td>${r.submissions?.worker_name || ''}</td>
+          <td>${r.submissions?.work_datetime || ''}</td>
+          <td>${r.submissions?.location || ''}</td>
+          <td>${r.submissions?.submitted_at || ''}</td>
+          <td>${r.checklist_questions?.question_text || ''}</td>
+          <td>${r.answer_yesno || ''}</td>
+          <td>${r.correction_text || ''}</td>
+          <td>${r.text_answer || ''}</td>
+        `;
+        submissionsBody.appendChild(tr);
+      });
+    }
+
+    function downloadCsv() {
+      const rows = [
+        ['사업단', '이름', '일시', '장소', '제출시각', '템플릿', '버전', '문항', '예/아니오', '조치내용', '주관식']
+      ];
+
+      submissionsCache.forEach(r => {
+        rows.push([
+          r.submissions?.business_units?.name || '',
+          r.submissions?.worker_name || '',
+          r.submissions?.work_datetime || '',
+          r.submissions?.location || '',
+          r.submissions?.submitted_at || '',
+          r.submissions?.checklist_templates?.title || '',
+          r.submissions?.checklist_templates?.version || '',
+          r.checklist_questions?.question_text || '',
+          r.answer_yesno || '',
+          r.correction_text || '',
+          r.text_answer || ''
+        ]);
+      });
+
+      const csv = rows.map(row => row.map(escapeCsv).join(',')).join('\n');
+      const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'submissions.csv';
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    async function initAdmin() {
+      await loadUnits();
+      if (editorUnitSelect.value) await loadCurrentTemplate();
+    }
+
+    loginBtn.addEventListener('click', checkPassword);
+    adminPassword.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') checkPassword();
+    });
+
+    addUnitBtn.addEventListener('click', addBusinessUnit);
+    loadCurrentBtn.addEventListener('click', loadCurrentTemplate);
+    addQuestionBtn.addEventListener('click', () => addQuestionRow());
+    saveTemplateBtn.addEventListener('click', saveNewVersion);
+    loadSubmissionsBtn.addEventListener('click', loadSubmissions);
+    downloadCsvBtn.addEventListener('click', downloadCsv);
+
+    if (localStorage.getItem('tbm_admin_ok') === '1') {
+      loginCard.classList.add('hidden');
+      dashboard.classList.remove('hidden');
+      initAdmin();
+    }
+  </script>
+</body>
+</html>

@@ -191,6 +191,20 @@
       return `"${s.replaceAll('"', '""')}"`;
     }
 
+    function formatKST(datetimeStr) {
+      if (!datetimeStr) return '';
+      return new Date(datetimeStr).toLocaleString('ko-KR', {
+        timeZone: 'Asia/Seoul',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false
+      }).replaceAll('.', '-').replace(',', '');
+    }
+    
     function setDetailsVisible(visible) {
       detailsSection.classList.toggle('hidden', !visible);
     }
@@ -670,8 +684,8 @@
           <td>${r.submissions?.worker_name || ''}</td>
           <td>${r.submissions?.location || ''}</td>
           <td>${r.submissions?.work_content || ''}</td>
-          <td>${r.submissions?.work_datetime || ''}</td>
-          <td>${r.submissions?.submitted_at || ''}</td>
+          <td>${formatKST(r.submissions?.work_datetime)}</td>
+          <td>${formatKST(r.submissions?.submitted_at)}</td>
           <td>${r.checklist_questions?.question_text || ''}</td>
           <td>${r.answer_yesno || ''}</td>
           <td>${r.correction_text || ''}</td>
@@ -692,8 +706,8 @@
           r.submissions?.worker_name || '',
           r.submissions?.location || '',
           r.submissions?.work_content || '',
-          r.submissions?.work_datetime || '',
-          r.submissions?.submitted_at || '',
+          formatKST(r.submissions?.work_datetime),
+          formatKST(r.submissions?.submitted_at),
           r.checklist_questions?.question_text || '',
           r.answer_yesno || '',
           r.correction_text || '',

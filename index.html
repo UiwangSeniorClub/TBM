@@ -237,7 +237,7 @@
       font-weight: 500;
       color: #1f2937;
       overflow-wrap: anywhere;
-      word-break: keep-all;
+      word-break: break-word;
       font-family: "Pretendard", "Noto Sans KR", Arial, sans-serif;
     }
   
@@ -437,6 +437,45 @@
   
       .subtitle {
         font-size: 17px;
+      }
+
+      * {
+        min-width: 0;
+      }
+
+      input,
+      select,
+      textarea,
+      button {
+        max-width: 100%;
+      }
+
+      input[type="datetime-local"],
+      input[type="date"],
+      select {
+        min-width: 0;
+        max-width: 100%;
+        width: 100%;
+      }
+
+      .hero,
+      .card,
+      .readbox,
+      .question,
+      .field-grid,
+      .question-list,
+      .radio-group {
+        max-width: 100%;
+        overflow-x: hidden;
+      }
+
+      .intro-text,
+      .question-title,
+      .hero h1,
+      .big-title,
+      .subtitle {
+        word-break: break-word;
+        overflow-wrap: anywhere;
       }
     }
   </style>

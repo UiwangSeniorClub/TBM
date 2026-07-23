@@ -64,14 +64,12 @@
       <label style="margin-top:18px;">사업단 추가</label>
       <input id="newUnitName" type="text" placeholder="새 사업단명" />
       <button id="addUnitBtn" type="button">사업단 추가</button>
-      <div class="small">각 사업단 오른쪽의 선택/이름 수정/삭제 버튼으로 관리합니다.</div>
     </div>
 
     <div id="detailsSection" class="hidden">
 
       <div class="card">
         <div class="section-title" id="selectedUnitLabel">사업단</div>
-        <div id="selectedUnitText" class="small">선택된 사업단 없음</div>
       </div>
 
       <div class="card">
@@ -80,7 +78,7 @@
         <ul id="locationsList"></ul>
 
         <label style="margin-top:18px;">장소 추가</label>
-        <input id="newLocationName" type="text" placeholder="예: 카페 1층" />
+        <input id="newLocationName" type="text" placeholder="장소명 입력" />
         <button id="addLocationBtn" type="button">장소 추가</button>
       </div>
 
@@ -154,7 +152,6 @@
     const addUnitBtn = document.getElementById('addUnitBtn');
 
     const detailsSection = document.getElementById('detailsSection');
-    const selectedUnitText = document.getElementById('selectedUnitText');
     const selectedUnitLabel = document.getElementById('selectedUnitLabel');
 
     const locationsList = document.getElementById('locationsList');
@@ -314,7 +311,6 @@
       selectedUnitId = '';
       renderUnitsList();
       setDetailsVisible(false);
-      selectedUnitText.textContent = '선택된 사업단 없음';
       selectedUnitLabel.textContent = '사업단';
       locationsList.innerHTML = '';
       templateTitle.value = '';
@@ -335,7 +331,6 @@
       if (unitErr) return alert('사업단 정보 불러오기 실패: ' + unitErr.message);
       if (!unit) return clearSelection();
 
-      selectedUnitText.textContent = `선택된 사업단: ${unit.name}`;
       selectedUnitLabel.textContent = unit.name;
 
       await loadLocations();
@@ -373,7 +368,6 @@
 
       if (selectedUnitId === unitId) {
         selectedUnitLabel.textContent = name;
-        selectedUnitText.textContent = `선택된 사업단: ${name}`;
       }
 
       await loadUnits();

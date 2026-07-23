@@ -118,10 +118,10 @@
             <thead>
               <tr>
                 <th>사업단</th>
+                <th>이름</th>
                 <th>장소</th>
                 <th>일시</th>
                 <th>제출시각</th>
-                <th>이름</th>
                 <th>질문</th>
                 <th>예/아니오</th>
                 <th>조치내용</th>
@@ -588,14 +588,14 @@
         const tr = document.createElement('tr');
         tr.innerHTML = `
           <td>${r.submissions?.business_units?.name || ''}</td>
-          <td>${r.submissions?.location || ''}</td>
-          <td>${r.submissions?.work_datetime || ''}</td>
-          <td>${r.submissions?.submitted_at || ''}</td>
-          <td>${r.submissions?.worker_name || ''}</td>
-          <td>${r.checklist_questions?.question_text || ''}</td>
-          <td>${r.answer_yesno || ''}</td>
-          <td>${r.correction_text || ''}</td>
-          <td>${r.text_answer || ''}</td>
+            <td>${r.submissions?.worker_name || ''}</td>
+            <td>${r.submissions?.location || ''}</td>
+            <td>${r.submissions?.work_datetime || ''}</td>
+            <td>${r.submissions?.submitted_at || ''}</td>
+            <td>${r.checklist_questions?.question_text || ''}</td>
+            <td>${r.answer_yesno || ''}</td>
+            <td>${r.correction_text || ''}</td>
+            <td>${r.text_answer || ''}</td>
         `;
         submissionsBody.appendChild(tr);
       });
@@ -603,16 +603,16 @@
 
     function downloadCsv() {
       const rows = [
-        ['사업단', '장소', '일시', '제출시각', '이름', '질문', '예/아니오', '조치내용', '주관식']
+        ['사업단', '이름', '장소', '일시', '제출시각', '질문', '예/아니오', '조치내용', '주관식']
       ];
 
       submissionsCache.forEach(r => {
         rows.push([
           r.submissions?.business_units?.name || '',
+          r.submissions?.worker_name || '',
           r.submissions?.location || '',
           r.submissions?.work_datetime || '',
           r.submissions?.submitted_at || '',
-          r.submissions?.worker_name || '',
           r.checklist_questions?.question_text || '',
           r.answer_yesno || '',
           r.correction_text || '',

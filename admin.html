@@ -20,7 +20,6 @@
     button { cursor:pointer; }
     .topbar { display:flex; justify-content:flex-end; margin-bottom:12px; }
     .topbar button { width:auto; }
-    .small { color:#666; font-size:12px; margin-top:8px; line-height:1.4; }
     .unit-list { display:flex; flex-direction:column; gap:8px; margin-top:12px; }
     .unit-item {
       display:flex; justify-content:space-between; align-items:center;
@@ -55,7 +54,6 @@
   </div>
 
   <div id="dashboard" class="hidden">
-
     <div class="card">
       <h3>사업단 관리</h3>
       <label>사업단 목록</label>
@@ -67,7 +65,6 @@
     </div>
 
     <div id="detailsSection" class="hidden">
-
       <div class="card">
         <div class="section-title" id="selectedUnitLabel">사업단</div>
       </div>
@@ -80,6 +77,16 @@
         <label style="margin-top:18px;">장소 추가</label>
         <input id="newLocationName" type="text" placeholder="장소명 입력" />
         <button id="addLocationBtn" type="button">장소 추가</button>
+      </div>
+
+      <div class="card">
+        <h3>작업내용 설정</h3>
+        <label>현재 등록된 작업내용</label>
+        <ul id="workContentsList"></ul>
+
+        <label style="margin-top:18px;">작업내용 추가</label>
+        <input id="newWorkContentName" type="text" placeholder="작업내용 입력" />
+        <button id="addWorkContentBtn" type="button">작업내용 추가</button>
       </div>
 
       <div class="card">
@@ -118,6 +125,7 @@
                 <th>사업단</th>
                 <th>이름</th>
                 <th>장소</th>
+                <th>작업내용</th>
                 <th>일시</th>
                 <th>제출시각</th>
                 <th>질문</th>
@@ -130,7 +138,6 @@
           </table>
         </div>
       </div>
-
     </div>
   </div>
 
@@ -157,6 +164,10 @@
     const locationsList = document.getElementById('locationsList');
     const newLocationName = document.getElementById('newLocationName');
     const addLocationBtn = document.getElementById('addLocationBtn');
+
+    const workContentsList = document.getElementById('workContentsList');
+    const newWorkContentName = document.getElementById('newWorkContentName');
+    const addWorkContentBtn = document.getElementById('addWorkContentBtn');
 
     const templateTitle = document.getElementById('templateTitle');
     const introText = document.getElementById('introText');
@@ -313,6 +324,7 @@
       setDetailsVisible(false);
       selectedUnitLabel.textContent = '사업단';
       locationsList.innerHTML = '';
+      workContentsList.innerHTML = '';
       templateTitle.value = '';
       introText.value = '';
       questionEditor.innerHTML = '';
@@ -334,6 +346,7 @@
       selectedUnitLabel.textContent = unit.name;
 
       await loadLocations();
+      await loadWorkContents();
       await loadCurrentTemplate();
     }
 
@@ -375,7 +388,7 @@
     }
 
     async function deleteBusinessUnitInline(unitId, name) {
-      const ok = confirm(`"${name}" 사업단을 삭제하면 관련 장소, 체크리스트, 제출기록, 답변이 모두 삭제됩니다. 정말 삭제할까요?`);
+      const ok = confirm(`"${name}" 사업단을 삭제하면 관련 장소, 작업내용, 체크리스트, 제출기록, 답변이 모두 삭제됩니다. 정말 삭제할까요?`);
       if (!ok) return;
 
       const { error } = await supabase.rpc('delete_business_unit', { p_id: unitId });
@@ -458,6 +471,77 @@
       newLocationName.value = '';
       await loadLocations();
       alert('장소 추가 완료');
+    }
+
+    async function loadWorkContents() {
+      if (!selectedUnitId) {
+        workContentsList.innerHTML = '';
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from('business_work_contents')
+        .select('*')
+        .eq('business_unit_id', selectedUnitId)
+        .eq('active', true)
+        .order('name', { ascending: true });
+
+      if (error) return alert('작업내용 조회 실패: ' + error.message);
+
+      workContentsList.innerHTML = '';
+      if (!data || data.length === 0) {
+        workContentsList.innerHTML = '<li>등록된 작업내용 없음</li>';
+        return;
+      }
+
+      data.forEach(item => {
+        const li = document.createElement('li');
+        const wrap = document.createElement('div');
+        wrap.className = 'row';
+        wrap.style.alignItems = 'center';
+
+        const nameDiv = document.createElement('div');
+        nameDiv.textContent = item.name;
+
+        const delBtn = document.createElement('button');
+        delBtn.type = 'button';
+        delBtn.textContent = '삭제';
+        delBtn.style.width = 'auto';
+        delBtn.addEventListener('click', async () => {
+          const ok = confirm(`작업내용 "${item.name}"을(를) 삭제할까요?`);
+          if (!ok) return;
+
+          const { error: delErr } = await supabase
+            .from('business_work_contents')
+            .delete()
+            .eq('id', item.id);
+
+          if (delErr) return alert('작업내용 삭제 실패: ' + delErr.message);
+          await loadWorkContents();
+        });
+
+        wrap.appendChild(nameDiv);
+        wrap.appendChild(delBtn);
+        li.appendChild(wrap);
+        workContentsList.appendChild(li);
+      });
+    }
+
+    async function addWorkContent() {
+      if (!selectedUnitId) return alert('사업단을 선택하세요.');
+
+      const name = newWorkContentName.value.trim();
+      if (!name) return alert('작업내용을 입력하세요.');
+
+      const { error } = await supabase
+        .from('business_work_contents')
+        .insert([{ business_unit_id: selectedUnitId, name }]);
+
+      if (error) return alert('작업내용 추가 실패: ' + error.message);
+
+      newWorkContentName.value = '';
+      await loadWorkContents();
+      alert('작업내용 추가 완료');
     }
 
     async function loadCurrentTemplate() {
@@ -552,6 +636,7 @@
             worker_name,
             work_datetime,
             location,
+            work_content,
             submitted_at,
             business_units(name),
             checklist_templates(title, version)
@@ -582,14 +667,15 @@
         const tr = document.createElement('tr');
         tr.innerHTML = `
           <td>${r.submissions?.business_units?.name || ''}</td>
-            <td>${r.submissions?.worker_name || ''}</td>
-            <td>${r.submissions?.location || ''}</td>
-            <td>${r.submissions?.work_datetime || ''}</td>
-            <td>${r.submissions?.submitted_at || ''}</td>
-            <td>${r.checklist_questions?.question_text || ''}</td>
-            <td>${r.answer_yesno || ''}</td>
-            <td>${r.correction_text || ''}</td>
-            <td>${r.text_answer || ''}</td>
+          <td>${r.submissions?.worker_name || ''}</td>
+          <td>${r.submissions?.location || ''}</td>
+          <td>${r.submissions?.work_content || ''}</td>
+          <td>${r.submissions?.work_datetime || ''}</td>
+          <td>${r.submissions?.submitted_at || ''}</td>
+          <td>${r.checklist_questions?.question_text || ''}</td>
+          <td>${r.answer_yesno || ''}</td>
+          <td>${r.correction_text || ''}</td>
+          <td>${r.text_answer || ''}</td>
         `;
         submissionsBody.appendChild(tr);
       });
@@ -597,7 +683,7 @@
 
     function downloadCsv() {
       const rows = [
-        ['사업단', '이름', '장소', '일시', '제출시각', '질문', '예/아니오', '조치내용', '주관식']
+        ['사업단', '이름', '장소', '작업내용', '일시', '제출시각', '질문', '예/아니오', '조치내용', '주관식']
       ];
 
       submissionsCache.forEach(r => {
@@ -605,6 +691,7 @@
           r.submissions?.business_units?.name || '',
           r.submissions?.worker_name || '',
           r.submissions?.location || '',
+          r.submissions?.work_content || '',
           r.submissions?.work_datetime || '',
           r.submissions?.submitted_at || '',
           r.checklist_questions?.question_text || '',
@@ -641,6 +728,7 @@
 
     addUnitBtn.addEventListener('click', addBusinessUnit);
     addLocationBtn.addEventListener('click', addLocation);
+    addWorkContentBtn.addEventListener('click', addWorkContent);
     loadCurrentBtn.addEventListener('click', loadCurrentTemplate);
     addQuestionBtn.addEventListener('click', () => addQuestionRow());
     saveTemplateBtn.addEventListener('click', saveNewVersion);

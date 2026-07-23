@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>의왕시니어클럽 안전확인 일지 (TBM)</title>
-  <style>
+<style>
     :root{
       --bg: #f4f7fb;
       --card: #ffffff;
@@ -29,9 +29,12 @@
       --radius: 18px;
     }
   
-    * { box-sizing: border-box; }
+    * {
+      box-sizing: border-box;
+    }
   
-    html, body {
+    html,
+    body {
       width: 100%;
       max-width: 100%;
       overflow-x: hidden;
@@ -48,11 +51,11 @@
     }
   
     .page {
-      max-width: 980px;
+      max-width: 860px;
+      width: 100%;
       margin: 0 auto;
       padding: 20px 16px 40px;
       min-width: 0;
-      max-width: 100%;
     }
   
     .topbar {
@@ -170,7 +173,9 @@
       color: #344054;
     }
   
-    input, select, textarea {
+    input,
+    select,
+    textarea {
       width: 100%;
       font: inherit;
       min-width: 0;
@@ -182,7 +187,9 @@
       cursor: pointer;
     }
   
-    input, select, textarea {
+    input,
+    select,
+    textarea {
       border: 1px solid #cfd8e3;
       background: #fff;
       border-radius: 12px;
@@ -192,7 +199,9 @@
       outline: none;
     }
   
-    input:focus, select:focus, textarea:focus {
+    input:focus,
+    select:focus,
+    textarea:focus {
       border-color: var(--teal);
       box-shadow: 0 0 0 4px rgba(15,118,110,0.12);
     }
@@ -283,16 +292,15 @@
     }
   
     .radio-group {
-      display: flex;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 10px;
-      flex-wrap: wrap;
       margin-bottom: 10px;
       min-width: 0;
       max-width: 100%;
     }
   
     .choice {
-      flex: 1 1 140px;
       border: 1px solid #d6dde7;
       border-radius: 14px;
       padding: 0;
@@ -370,7 +378,9 @@
       font-size: 13px;
     }
   
-    .hidden { display: none; }
+    .hidden {
+      display: none;
+    }
   
     .submit-wrap {
       margin-top: 8px;
@@ -404,8 +414,12 @@
         grid-template-columns: 1fr;
       }
   
+      .radio-group {
+        grid-template-columns: 1fr;
+      }
+  
       .choice {
-        flex: 1 1 100%;
+        width: 100%;
       }
   
       .hero {
@@ -422,6 +436,7 @@
   
       .subtitle {
         font-size: 17px;
+      }
     }
   </style>
 </head>

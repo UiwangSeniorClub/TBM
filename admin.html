@@ -393,6 +393,16 @@
       .unit-name {
         font-size: 17px;
       }
+
+      .unit-item.selected {
+        border-color: #0f766e;
+        background: linear-gradient(180deg, #f0fffd 0%, #ffffff 100%);
+        box-shadow: 0 8px 18px rgba(15,118,110,0.10);
+      }
+
+      .unit-item.selected .unit-name {
+        color: #0f766e;
+      }    
     }
   </style>
 </head>
@@ -413,6 +423,7 @@
     <div id="dashboard" class="hidden">
       <div class="card">
         <h3>사업단 관리</h3>
+        <button id="clearSelectionBtn" type="button">선택 해제</button>
         <label>사업단 목록</label>
         <div class="unit-list" id="unitsList"></div>
 
@@ -540,6 +551,9 @@
     const downloadCsvBtn = document.getElementById('downloadCsvBtn');
     const submissionsBody = document.getElementById('submissionsBody');
 
+    const clearSelectionBtn = document.getElementById('clearSelectionBtn');
+    clearSelectionBtn.addEventListener('click', clearSelection);
+    
     let unitsCache = [];
     let selectedUnitId = '';
     let submissionsCache = [];
@@ -614,7 +628,7 @@
 
       unitsCache.forEach(unit => {
         const item = document.createElement('div');
-        item.className = 'unit-item';
+        item.className = 'unit-item' + (unit.id === selectedUnitId ? ' selected' : '');
 
         const left = document.createElement('div');
         left.innerHTML = `

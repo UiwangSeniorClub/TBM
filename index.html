@@ -1,1 +1,264 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>작업 전 안전점검</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 900px; margin: 0 auto; padding: 16px; }
+    .card { border: 1px solid #ddd; border-radius: 8px; padding: 16px; margin-bottom: 16px; }
+    label { display:block; margin-top: 10px; font-weight: bold; }
+    input, select, textarea, button { width: 100%; padding: 10px; margin-top: 6px; box-sizing: border-box; }
+    textarea { resize: vertical; }
+    .radio-group { display:flex; gap:12px; margin-top: 8px; }
+    .radio-group label { font-weight: normal; margin-top: 0; }
+    .question { border-top: 1px dashed #ddd; padding-top: 12px; margin-top: 12px; }
+    .hidden { display:none; }
+    .muted { color:#666; white-space: pre-wrap; }
+    button { cursor:pointer; }
+  </style>
+</head>
+<body>
+  <h2>작업 전 안전점검</h2>
 
+  <div class="card">
+    <label>사업단명</label>
+    <select id="businessUnitSelect"></select>
+
+    <label>이름</label>
+    <input id="workerName" type="text" placeholder="이름 입력" />
+
+    <label>일시</label>
+    <input id="workDatetime" type="datetime-local" />
+
+    <label>장소</label>
+    <input id="location" type="text" placeholder="장소 입력" />
+  </div>
+
+  <div class="card">
+    <h3>안전점검 리스트</h3>
+    <pre id="introText" class="muted"></pre>
+  </div>
+
+  <div class="card">
+    <h3>작업 전 안전조치 확인</h3>
+    <div id="questionsArea"></div>
+  </div>
+
+  <div class="card">
+    <h3>참여자 안전관련 특이사항 및 건의사항</h3>
+    <textarea id="suggestion" rows="5" placeholder="자유롭게 입력"></textarea>
+  </div>
+
+  <button id="submitBtn">제출</button>
+
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+    const supabaseUrl = 'YOUR_SUPABASE_URL';
+    const supabaseAnonKey = 'YOUR_SUPABASE_ANON_KEY';
+    const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
+    const businessUnitSelect = document.getElementById('businessUnitSelect');
+    const workerName = document.getElementById('workerName');
+    const workDatetime = document.getElementById('workDatetime');
+    const location = document.getElementById('location');
+    const introText = document.getElementById('introText');
+    const questionsArea = document.getElementById('questionsArea');
+    const suggestion = document.getElementById('suggestion');
+    const submitBtn = document.getElementById('submitBtn');
+
+    let currentTemplate = null;
+    let currentQuestions = [];
+
+    function nowLocalDatetime() {
+      const d = new Date();
+      const pad = n => String(n).padStart(2, '0');
+      const local = new Date(d.getTime() - d.getTimezoneOffset() * 60000);
+      return local.toISOString().slice(0, 16);
+    }
+
+    function setDefaultDatetime() {
+      workDatetime.value = nowLocalDatetime();
+    }
+
+    function renderQuestions() {
+      questionsArea.innerHTML = '';
+      currentQuestions.forEach((q) => {
+        const wrap = document.createElement('div');
+        wrap.className = 'question';
+        wrap.dataset.questionId = q.id;
+        wrap.dataset.questionType = q.question_type;
+        wrap.dataset.required = q.required ? 'true' : 'false';
+
+        const title = document.createElement('div');
+        title.innerHTML = `<strong>${q.sort_order}. ${q.question_text}${q.required ? ' *' : ''}</strong>`;
+        wrap.appendChild(title);
+
+        if (q.question_type === 'yesno') {
+          const radio = document.createElement('div');
+          radio.className = 'radio-group';
+          radio.innerHTML = `
+            <label><input type="radio" name="q_${q.id}" value="예"> 예</label>
+            <label><input type="radio" name="q_${q.id}" value="아니오"> 아니오</label>
+          `;
+          wrap.appendChild(radio);
+
+          const correctionWrap = document.createElement('div');
+          correctionWrap.className = 'hidden';
+          correctionWrap.innerHTML = `
+            <label>아니오인 경우 조치 내용</label>
+            <textarea rows="3" class="correction" placeholder="조치 내용 입력"></textarea>
+          `;
+          wrap.appendChild(correctionWrap);
+
+          radio.addEventListener('change', (e) => {
+            if (e.target && e.target.value) {
+              correctionWrap.classList.toggle('hidden', e.target.value !== '아니오');
+            }
+          });
+        } else {
+          const ta = document.createElement('textarea');
+          ta.rows = 4;
+          ta.className = 'text-answer';
+          ta.placeholder = q.required ? '입력' : '선택 입력';
+          wrap.appendChild(ta);
+        }
+
+        questionsArea.appendChild(wrap);
+      });
+    }
+
+    async function loadBusinessUnits() {
+      const { data, error } = await supabase
+        .from('business_units')
+        .select('*')
+        .eq('active', true)
+        .order('name', { ascending: true });
+
+      if (error) {
+        alert('사업단 불러오기 실패: ' + error.message);
+        return;
+      }
+
+      businessUnitSelect.innerHTML = '';
+      data.forEach(unit => {
+        const opt = document.createElement('option');
+        opt.value = unit.id;
+        opt.textContent = unit.name;
+        businessUnitSelect.appendChild(opt);
+      });
+
+      if (data.length > 0) {
+        await loadTemplate(data[0].id);
+      }
+    }
+
+    async function loadTemplate(businessUnitId) {
+      const { data: template, error: tplErr } = await supabase
+        .from('checklist_templates')
+        .select('*')
+        .eq('business_unit_id', businessUnitId)
+        .eq('active', true)
+        .order('version', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (tplErr) {
+        alert('템플릿 불러오기 실패: ' + tplErr.message);
+        return;
+      }
+
+      currentTemplate = template;
+      if (!template) {
+        introText.textContent = '활성화된 체크리스트가 없습니다.';
+        questionsArea.innerHTML = '';
+        return;
+      }
+
+      introText.textContent = template.intro_text || '';
+
+      const { data: questions, error: qErr } = await supabase
+        .from('checklist_questions')
+        .select('*')
+        .eq('template_id', template.id)
+        .eq('active', true)
+        .order('sort_order', { ascending: true });
+
+      if (qErr) {
+        alert('질문 불러오기 실패: ' + qErr.message);
+        return;
+      }
+
+      currentQuestions = questions || [];
+      renderQuestions();
+    }
+
+    businessUnitSelect.addEventListener('change', () => {
+      loadTemplate(businessUnitSelect.value);
+    });
+
+    submitBtn.addEventListener('click', async () => {
+      if (!businessUnitSelect.value) return alert('사업단을 선택하세요.');
+      if (!workerName.value.trim()) return alert('이름을 입력하세요.');
+      if (!workDatetime.value) return alert('일시를 입력하세요.');
+      if (!location.value.trim()) return alert('장소를 입력하세요.');
+      if (!currentTemplate) return alert('활성 체크리스트가 없습니다.');
+
+      const answers = [];
+      for (const q of currentQuestions) {
+        const block = questionsArea.querySelector(`[data-question-id="${q.id}"]`);
+        if (q.question_type === 'yesno') {
+          const checked = block.querySelector(`input[name="q_${q.id}"]:checked`);
+          if (!checked) return alert(`"${q.question_text}"에 답하세요.`);
+          const yesno = checked.value;
+          const correction = block.querySelector('.correction').value.trim();
+          if (yesno === '아니오' && !correction) {
+            return alert(`"${q.question_text}"에서 아니오 선택 시 조치 내용을 입력하세요.`);
+          }
+          answers.push({
+            question_id: q.id,
+            answer_yesno: yesno,
+            correction_text: yesno === '아니오' ? correction : '',
+            text_answer: ''
+          });
+        } else {
+          const text = block.querySelector('.text-answer').value.trim();
+          if (q.required && !text) return alert(`"${q.question_text}"을(를) 입력하세요.`);
+          answers.push({
+            question_id: q.id,
+            answer_yesno: '',
+            correction_text: '',
+            text_answer: text
+          });
+        }
+      }
+
+      const payload = {
+        business_unit_id: businessUnitSelect.value,
+        template_id: currentTemplate.id,
+        worker_name: workerName.value.trim(),
+        work_datetime: new Date(workDatetime.value).toISOString(),
+        location: location.value.trim(),
+        answers
+      };
+
+      const { data, error } = await supabase.rpc('submit_checklist', { payload });
+      if (error) {
+        alert('제출 실패: ' + error.message);
+        return;
+      }
+
+      alert('제출 완료');
+      workerName.value = '';
+      location.value = '';
+      suggestion.value = '';
+      setDefaultDatetime();
+      await loadTemplate(businessUnitSelect.value);
+    });
+
+    setDefaultDatetime();
+    loadBusinessUnits();
+  </script>
+</body>
+</html>

@@ -4,33 +4,39 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>의왕시니어클럽 안전확인 일지 (TBM)</title>
-  <style>
+<style>
     :root{
       --bg: #f4f7fb;
       --card: #ffffff;
       --line: #dbe4ee;
       --text: #1f2a37;
       --muted: #667085;
-
+  
       --navy: #17324d;
       --teal: #0f766e;
       --teal-weak: #e6fffb;
-
+  
       --green: #2e7d32;
       --green-bg: #e8f5e9;
-
+  
       --red: #b42318;
       --red-bg: #ffebee;
-
+  
       --amber: #b45309;
       --amber-bg: #fff7ed;
-
+  
       --shadow: 0 8px 24px rgba(16, 24, 40, 0.08);
       --radius: 18px;
     }
-
+  
     * { box-sizing: border-box; }
-
+  
+    html, body {
+      width: 100%;
+      max-width: 100%;
+      overflow-x: hidden;
+    }
+  
     body {
       margin: 0;
       font-family: "Pretendard", "Noto Sans KR", Arial, sans-serif;
@@ -40,19 +46,21 @@
         var(--bg);
       color: var(--text);
     }
-
+  
     .page {
       max-width: 980px;
       margin: 0 auto;
       padding: 20px 16px 40px;
+      min-width: 0;
+      max-width: 100%;
     }
-
+  
     .topbar {
       display: flex;
       justify-content: flex-end;
       margin-bottom: 14px;
     }
-
+  
     .topbar button {
       width: auto;
       border: 1px solid var(--line);
@@ -62,8 +70,9 @@
       padding: 10px 16px;
       font-weight: 700;
       box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+      cursor: pointer;
     }
-
+  
     .hero {
       background: linear-gradient(135deg, #17324d 0%, #0f766e 100%);
       color: #fff;
@@ -73,8 +82,10 @@
       margin-bottom: 18px;
       position: relative;
       overflow: hidden;
+      min-width: 0;
+      max-width: 100%;
     }
-
+  
     .hero::after {
       content: "";
       position: absolute;
@@ -85,7 +96,7 @@
       background: rgba(255,255,255,0.08);
       border-radius: 50%;
     }
-
+  
     .hero-badge {
       display: inline-block;
       background: rgba(255,255,255,0.14);
@@ -97,20 +108,22 @@
       letter-spacing: 0.2px;
       margin-bottom: 10px;
     }
-
+  
     .hero h1 {
       margin: 0;
       font-size: clamp(24px, 4vw, 34px);
       line-height: 1.25;
       letter-spacing: -0.02em;
+      overflow-wrap: anywhere;
+      word-break: keep-all;
     }
-
+  
     .hero p {
       margin: 10px 0 0;
       color: rgba(255,255,255,0.84);
       font-size: 14px;
     }
-
+  
     .card {
       background: var(--card);
       border: 1px solid var(--line);
@@ -118,8 +131,12 @@
       padding: 18px;
       margin-bottom: 16px;
       box-shadow: var(--shadow);
+      width: 100%;
+      min-width: 0;
+      max-width: 100%;
+      overflow-x: clip;
     }
-
+  
     .section-title {
       margin: 0 0 12px;
       font-size: 18px;
@@ -127,40 +144,44 @@
       color: var(--navy);
       letter-spacing: -0.01em;
     }
-
+  
     .field-grid {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 14px;
+      width: 100%;
+      min-width: 0;
     }
-
+  
     .field {
       display: flex;
       flex-direction: column;
       gap: 6px;
+      min-width: 0;
     }
-
+  
     .field.full {
       grid-column: 1 / -1;
     }
-
+  
     label {
       font-size: 14px;
       font-weight: 800;
       color: #344054;
     }
-
+  
     input, select, textarea {
       width: 100%;
       font: inherit;
+      min-width: 0;
     }
-
+  
     button {
       width: 100%;
       font: inherit;
       cursor: pointer;
     }
-
+  
     input, select, textarea {
       border: 1px solid #cfd8e3;
       background: #fff;
@@ -170,31 +191,35 @@
       transition: border-color .15s, box-shadow .15s, transform .1s;
       outline: none;
     }
-
+  
     input:focus, select:focus, textarea:focus {
       border-color: var(--teal);
       box-shadow: 0 0 0 4px rgba(15,118,110,0.12);
     }
-
+  
     textarea {
       resize: vertical;
       min-height: 110px;
       line-height: 1.6;
     }
-
+  
     .hint {
       color: var(--muted);
       font-size: 13px;
       margin-top: 2px;
     }
-
+  
     .readbox {
       background: linear-gradient(180deg, #fbfdff 0%, #f8fbff 100%);
       border: 1px solid #d8e3ee;
       border-radius: 16px;
       padding: 16px 16px 14px;
+      width: 100%;
+      min-width: 0;
+      max-width: 100%;
+      overflow-x: clip;
     }
-
+  
     .intro-text {
       margin: 0;
       white-space: pre-wrap;
@@ -202,8 +227,10 @@
       font-size: 16px;
       font-weight: 500;
       color: #1f2937;
+      overflow-wrap: anywhere;
+      word-break: keep-all;
     }
-
+  
     .big-title {
       font-size: 22px;
       font-weight: 900;
@@ -211,48 +238,59 @@
       margin-bottom: 12px;
       letter-spacing: -0.02em;
       line-height: 1.25;
+      overflow-wrap: anywhere;
+      word-break: keep-all;
     }
-
+  
     .subtitle {
       font-size: 18px;
       font-weight: 800;
       color: var(--navy);
     }
-
+  
     .question-list {
       display: flex;
       flex-direction: column;
       gap: 14px;
+      width: 100%;
+      min-width: 0;
     }
-
+  
     .question {
       border: 1px solid #dde7f1;
       background: #fff;
       border-radius: 16px;
       padding: 14px;
+      width: 100%;
+      min-width: 0;
+      overflow-x: clip;
     }
-
+  
     .question-title {
       font-size: 16px;
       font-weight: 800;
       color: #20324a;
       line-height: 1.45;
       margin-bottom: 12px;
+      overflow-wrap: anywhere;
+      word-break: keep-all;
     }
-
+  
     .required-mark {
       color: var(--red);
       margin-left: 4px;
       font-weight: 900;
     }
-
+  
     .radio-group {
       display: flex;
       gap: 10px;
       flex-wrap: wrap;
       margin-bottom: 10px;
+      min-width: 0;
+      max-width: 100%;
     }
-
+  
     .choice {
       flex: 1 1 140px;
       border: 1px solid #d6dde7;
@@ -265,19 +303,21 @@
       min-height: 48px;
       display: flex;
       align-items: stretch;
+      min-width: 0;
+      max-width: 100%;
     }
-
+  
     .choice:hover {
       transform: translateY(-1px);
       box-shadow: 0 6px 16px rgba(16,24,40,0.08);
     }
-
+  
     .choice input {
       position: absolute;
       opacity: 0;
       pointer-events: none;
     }
-
+  
     .choice span {
       width: 100%;
       display: flex;
@@ -288,32 +328,35 @@
       color: #344054;
       user-select: none;
       gap: 8px;
+      min-width: 0;
+      overflow-wrap: anywhere;
+      word-break: keep-all;
     }
-
+  
     .choice-yes input:checked + span {
       background: var(--green-bg);
       color: var(--green);
       box-shadow: inset 0 0 0 1px rgba(46,125,50,0.25);
     }
-
+  
     .choice-no input:checked + span {
       background: var(--red-bg);
       color: var(--red);
       box-shadow: inset 0 0 0 1px rgba(180,35,24,0.25);
     }
-
+  
     .choice-yes span::before {
       content: "✔";
       font-size: 12px;
       opacity: .8;
     }
-
+  
     .choice-no span::before {
       content: "✕";
       font-size: 12px;
       opacity: .8;
     }
-
+  
     .correction-wrap {
       margin-top: 10px;
       background: var(--amber-bg);
@@ -321,18 +364,18 @@
       border-radius: 14px;
       padding: 12px;
     }
-
+  
     .correction-wrap label {
       color: #9a4d00;
       font-size: 13px;
     }
-
+  
     .hidden { display: none; }
-
+  
     .submit-wrap {
       margin-top: 8px;
     }
-
+  
     .submit-btn {
       border: none;
       border-radius: 14px;
@@ -342,107 +385,43 @@
       font-size: 16px;
       padding: 14px 16px;
       box-shadow: 0 10px 20px rgba(15,118,110,0.20);
+      cursor: pointer;
     }
-
+  
     .submit-btn:hover {
       filter: brightness(1.03);
     }
-
+  
     .footer-note {
       margin-top: 10px;
       color: var(--muted);
       font-size: 12px;
       text-align: center;
     }
-
+  
     @media (max-width: 720px) {
       .field-grid {
         grid-template-columns: 1fr;
       }
-
+  
       .choice {
         flex: 1 1 100%;
       }
-
+  
       .hero {
         padding: 18px;
       }
-
+  
       .card {
         padding: 16px;
       }
-
+  
       .big-title {
         font-size: 20px;
       }
-
-      html, body {
-        overflow-x: hidden;
-      }
-
-      .page,
-      .card,
-      .hero,
-      .readbox,
-      .question,
-      .field-grid,
-      .question-list {
-        min-width: 0;
-      }
-
-      .intro-text,
-      .question-title,
-      .hero h1 {
-        overflow-wrap: anywhere;
-        word-break: keep-all;
-      }
-
-      .card {
-        width: 100%;
-      }
-
-      html, body {
-        overflow-x: hidden;
-      }
-
-      .page,
-      .card,
-      .hero,
-      .readbox,
-      .question,
-      .field-grid,
-      .question-list,
-      .question,
-      .question-list,
-      .question * {
-        min-width: 0;
-      }
-
-      .field-grid,
-      .question-list {
-        width: 100%;
-      }
-
-      .radio-group {
-        min-width: 0;
-      }
-
-      .choice {
-        min-width: 0;
-        max-width: 100%;
-      }
-
-      .choice span {
-        min-width: 0;
-        word-break: keep-all;
-      }
-
-      .card,
-      .hero,
-      .readbox {
-        width: 100%;
-        overflow-x: hidden;
-      }
+  
+      .subtitle {
+        font-size: 17px;
     }
   </style>
 </head>

@@ -6,150 +6,182 @@
   <title>의왕시니어클럽 안전확인 일지 (TBM)</title>
   <style>
     :root{
-      --bg: #f4f7fb;
-      --card: #ffffff;
-      --line: #dbe4ee;
-      --text: #1f2a37;
-      --muted: #667085;
-  
-      --navy: #17324d;
-      --teal: #0f766e;
-      --teal-weak: #e6fffb;
-  
-      --green: #2e7d32;
-      --green-bg: #e8f5e9;
-  
-      --red: #b42318;
-      --red-bg: #ffebee;
-  
-      --amber: #b45309;
-      --amber-bg: #fff7ed;
-  
-      --shadow: 0 8px 24px rgba(16, 24, 40, 0.08);
-      --radius: 18px;
+      --paper: #F6F3EC;
+      --card: #FFFFFF;
+      --line: #E3DED1;
+      --line-strong: #CFC7B4;
+      --ink: #20303F;
+      --muted: #6B7686;
+
+      --navy: #1B3A4D;
+      --navy-deep: #12283A;
+      --safety: #E0631F;
+      --safety-weak: #FDEDE1;
+      --teal: #14726B;
+
+      --green: #21793A;
+      --green-bg: #E7F3E9;
+      --red: #B3261E;
+      --red-bg: #FCEAE8;
+
+      --shadow: 0 10px 30px rgba(18, 40, 58, 0.10);
+      --shadow-sm: 0 3px 10px rgba(18, 40, 58, 0.06);
+      --radius: 20px;
     }
-  
-    * {
-      box-sizing: border-box;
-    }
-  
-    html,
-    body {
-      width: 100%;
-      max-width: 100%;
-      overflow-x: hidden;
-    }
-  
+
+    * { box-sizing: border-box; }
+
+    html, body { width: 100%; max-width: 100%; overflow-x: hidden; }
+
     body {
       margin: 0;
       font-family: "Pretendard", "Noto Sans KR", Arial, sans-serif;
-      background:
-        radial-gradient(circle at top left, rgba(15,118,110,0.10), transparent 32%),
-        radial-gradient(circle at top right, rgba(23,50,77,0.08), transparent 25%),
-        var(--bg);
-      color: var(--text);
+      background: var(--paper);
+      background-image:
+        linear-gradient(180deg, #EFE9DA 0%, var(--paper) 320px);
+      color: var(--ink);
+      -webkit-font-smoothing: antialiased;
     }
-  
+
     .page {
-      max-width: 860px;
+      max-width: 720px;
       width: 100%;
       margin: 0 auto;
-      padding: 20px 16px 40px;
+      padding: 22px 18px 56px;
       min-width: 0;
     }
-  
-    .topbar {
-      display: flex;
-      justify-content: center;
-      margin-top: 18px;
-      margin-bottom: 0;
-    }
-  
-    .topbar button {
-      width: auto;
-      border: 1px solid var(--line);
-      background: #fff;
-      color: var(--navy);
-      border-radius: 999px;
-      padding: 10px 16px;
-      font-weight: 700;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-      cursor: pointer;
-    }
-  
+
+    /* ---------- HERO ---------- */
     .hero {
-      background: linear-gradient(135deg, #17324d 0%, #0f766e 100%);
+      position: relative;
+      background: linear-gradient(160deg, var(--navy) 0%, var(--navy-deep) 100%);
       color: #fff;
       border-radius: 24px;
-      padding: 28px 22px;
+      padding: 34px 26px 30px;
       box-shadow: var(--shadow);
-      margin-bottom: 18px;
-      position: relative;
+      margin-bottom: 22px;
       overflow: hidden;
-      min-width: 0;
-      max-width: 100%;
-      text-align: center;
     }
-  
-    .hero::after {
-      content: "";
-      position: absolute;
-      right: -40px;
-      top: -40px;
-      width: 180px;
-      height: 180px;
+
+    .hero::before{
+      content:"";
+      position:absolute;
+      inset:0;
+      background-image: repeating-linear-gradient(
+        135deg,
+        rgba(224,99,31,0.14) 0px,
+        rgba(224,99,31,0.14) 10px,
+        transparent 10px,
+        transparent 22px
+      );
+      opacity:.5;
+      -webkit-mask-image: linear-gradient(180deg, transparent 60%, black 100%);
+      mask-image: linear-gradient(180deg, transparent 60%, black 100%);
+    }
+
+    .hero-top{
+      position: relative;
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:16px;
+    }
+
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items:center;
+      gap:6px;
+      font-size: 12.5px;
+      font-weight: 800;
+      letter-spacing: .04em;
+      color: #DCEFE9;
       background: rgba(255,255,255,0.08);
-      border-radius: 50%;
-    }
-  
-    .hero-badge {
-      display: inline-block;
-      background: rgba(255,255,255,0.14);
-      border: 1px solid rgba(255,255,255,0.18);
+      border: 1px solid rgba(255,255,255,0.16);
       padding: 6px 12px;
       border-radius: 999px;
-      font-size: 13px;
-      font-weight: 700;
-      letter-spacing: 0.2px;
-      margin-bottom: 10px;
     }
-  
+
+    .hero-eyebrow .dot{
+      width:6px; height:6px; border-radius:50%;
+      background: var(--safety);
+      box-shadow: 0 0 0 3px rgba(224,99,31,0.25);
+    }
+
     .hero h1 {
-      margin: 0;
-      font-size: clamp(24px, 4vw, 34px);
-      line-height: 1.25;
-      letter-spacing: -0.02em;
-      overflow-wrap: anywhere;
+      position: relative;
+      margin: 16px 0 0;
+      font-size: clamp(22px, 5vw, 28px);
+      line-height: 1.35;
+      letter-spacing: -0.01em;
+      font-weight: 900;
       word-break: keep-all;
+      overflow-wrap: anywhere;
     }
-  
-    .hero p {
-      margin: 10px 0 0;
-      color: rgba(255,255,255,0.84);
-      font-size: 14px;
+
+    .hero p.hero-sub {
+      position: relative;
+      margin: 8px 0 0;
+      color: rgba(255,255,255,0.72);
+      font-size: 13.5px;
+      font-weight: 500;
     }
-  
+
+    .stamp {
+      flex: 0 0 auto;
+      width: 56px; height: 56px;
+      border-radius: 50%;
+      border: 2px solid var(--safety);
+      display:flex; align-items:center; justify-content:center;
+      color: var(--safety);
+      font-weight: 900;
+      font-size: 12px;
+      letter-spacing: -.02em;
+      text-align:center;
+      line-height:1.15;
+      background: rgba(224,99,31,0.08);
+      transform: rotate(-8deg);
+    }
+
+    /* ---------- STEP LABEL ---------- */
+    .step-label {
+      display:flex;
+      align-items:center;
+      gap:10px;
+      margin: 0 2px 12px;
+    }
+
+    .step-num {
+      flex: 0 0 auto;
+      width: 26px; height: 26px;
+      border-radius: 8px;
+      background: var(--navy);
+      color:#fff;
+      font-size: 12px;
+      font-weight: 900;
+      display:flex; align-items:center; justify-content:center;
+    }
+
+    .step-text {
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--navy);
+      letter-spacing: .01em;
+    }
+
+    /* ---------- CARD ---------- */
     .card {
       background: var(--card);
       border: 1px solid var(--line);
       border-radius: var(--radius);
-      padding: 18px;
-      margin-bottom: 16px;
-      box-shadow: var(--shadow);
+      padding: 20px;
+      margin-bottom: 18px;
+      box-shadow: var(--shadow-sm);
       width: 100%;
       min-width: 0;
       max-width: 100%;
       overflow-x: clip;
     }
-  
-    .section-title {
-      margin: 0 0 12px;
-      font-size: 18px;
-      font-weight: 800;
-      color: var(--navy);
-      letter-spacing: -0.01em;
-    }
-  
+
     .field-grid {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -157,109 +189,77 @@
       width: 100%;
       min-width: 0;
     }
-  
-    .field {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      min-width: 0;
-    }
-  
-    .field.full {
-      grid-column: 1 / -1;
-    }
-  
+
+    .field { display:flex; flex-direction:column; gap: 7px; min-width: 0; }
+    .field.full { grid-column: 1 / -1; }
+
     label {
-      font-size: 14px;
+      font-size: 13.5px;
       font-weight: 800;
-      color: #344054;
+      color: #3E4A58;
     }
-  
-    input,
-    select,
-    textarea {
+
+    input, select, textarea {
       width: 100%;
       font: inherit;
       min-width: 0;
-    }
-  
-    button {
-      width: 100%;
-      font: inherit;
-      cursor: pointer;
-    }
-  
-    input,
-    select,
-    textarea {
-      border: 1px solid #cfd8e3;
-      background: #fff;
+      border: 1.5px solid var(--line-strong);
+      background: #FFFEFC;
       border-radius: 12px;
-      padding: 12px 14px;
-      color: var(--text);
-      transition: border-color .15s, box-shadow .15s, transform .1s;
+      padding: 13px 14px;
+      color: var(--ink);
+      transition: border-color .15s, box-shadow .15s;
       outline: none;
+      font-size: 15px;
     }
-  
-    input:focus,
-    select:focus,
-    textarea:focus {
+
+    input:focus, select:focus, textarea:focus {
       border-color: var(--teal);
-      box-shadow: 0 0 0 4px rgba(15,118,110,0.12);
+      box-shadow: 0 0 0 4px rgba(20,114,107,0.13);
     }
-  
-    textarea {
-      resize: vertical;
-      min-height: 110px;
-      line-height: 1.6;
-    }
-  
-    .hint {
-      color: var(--muted);
-      font-size: 13px;
-      margin-top: 2px;
-    }
-  
+
+    textarea { resize: vertical; min-height: 110px; line-height: 1.7; }
+
+    button { width:100%; font: inherit; cursor: pointer; }
+
+    /* ---------- CHECKLIST READBOX ---------- */
     .readbox {
-      background: linear-gradient(180deg, #fbfdff 0%, #f8fbff 100%);
-      border: 1px solid #d8e3ee;
+      background: linear-gradient(180deg, #FBF9F4 0%, #F6F2E8 100%);
+      border: 1.5px dashed var(--line-strong);
       border-radius: 16px;
-      padding: 16px 16px 14px;
+      padding: 18px 18px 16px;
       width: 100%;
       min-width: 0;
       max-width: 100%;
       overflow-x: clip;
     }
-  
+
+    .big-title {
+      font-size: 19px;
+      font-weight: 900;
+      color: var(--navy);
+      margin-bottom: 10px;
+      letter-spacing: -0.01em;
+      line-height: 1.3;
+      overflow-wrap: anywhere;
+      word-break: keep-all;
+    }
+
+    .subtitle { font-size: 15px; font-weight: 700; color: var(--teal); }
+
     .intro-text {
-      margin: 0;
+      margin: 10px 0 0;
       white-space: pre-wrap;
-      line-height: 1.8;
-      font-size: 16px;
+      line-height: 1.85;
+      font-size: 15.5px;
       font-weight: 500;
-      color: #1f2937;
+      color: #33404D;
       overflow-wrap: anywhere;
       word-break: break-word;
       font-family: "Pretendard", "Noto Sans KR", Arial, sans-serif;
     }
-  
-    .big-title {
-      font-size: 22px;
-      font-weight: 900;
-      color: var(--navy);
-      margin-bottom: 12px;
-      letter-spacing: -0.02em;
-      line-height: 1.25;
-      overflow-wrap: anywhere;
-      word-break: keep-all;
-    }
-  
-    .subtitle {
-      font-size: 18px;
-      font-weight: 800;
-      color: var(--navy);
-    }
-  
+
+    /* ---------- QUESTIONS ---------- */
     .question-list {
       display: flex;
       flex-direction: column;
@@ -267,33 +267,39 @@
       width: 100%;
       min-width: 0;
     }
-  
+
     .question {
-      border: 1px solid #dde7f1;
+      position: relative;
+      border: 1.5px solid var(--line);
       background: #fff;
       border-radius: 16px;
-      padding: 14px;
+      padding: 16px 16px 16px 18px;
       width: 100%;
       min-width: 0;
       overflow-x: clip;
     }
-  
+
+    .question::before{
+      content:"";
+      position:absolute;
+      left:0; top:12px; bottom:12px;
+      width: 4px;
+      border-radius: 4px;
+      background: var(--line-strong);
+    }
+
     .question-title {
-      font-size: 16px;
+      font-size: 15.5px;
       font-weight: 800;
-      color: #20324a;
-      line-height: 1.45;
-      margin-bottom: 12px;
+      color: #202D3A;
+      line-height: 1.5;
+      margin-bottom: 13px;
       overflow-wrap: anywhere;
       word-break: keep-all;
     }
-  
-    .required-mark {
-      color: var(--red);
-      margin-left: 4px;
-      font-weight: 900;
-    }
-  
+
+    .required-mark { color: var(--safety); margin-left: 4px; font-weight: 900; }
+
     .radio-group {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -302,33 +308,26 @@
       min-width: 0;
       max-width: 100%;
     }
-  
+
     .choice {
-      border: 1px solid #d6dde7;
-      border-radius: 14px;
+      border: 1.5px solid var(--line-strong);
+      border-radius: 13px;
       padding: 0;
       overflow: hidden;
       cursor: pointer;
-      transition: transform .08s, box-shadow .15s, border-color .15s;
+      transition: transform .08s, box-shadow .15s, border-color .15s, background .15s;
       background: #fff;
-      min-height: 48px;
+      min-height: 50px;
       display: flex;
       align-items: stretch;
       min-width: 0;
       max-width: 100%;
     }
-  
-    .choice:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 6px 16px rgba(16,24,40,0.08);
-    }
-  
-    .choice input {
-      position: absolute;
-      opacity: 0;
-      pointer-events: none;
-    }
-  
+
+    .choice:hover { transform: translateY(-1px); box-shadow: var(--shadow-sm); }
+
+    .choice input { position: absolute; opacity: 0; pointer-events: none; }
+
     .choice span {
       width: 100%;
       display: flex;
@@ -336,160 +335,137 @@
       justify-content: center;
       padding: 12px 14px;
       font-weight: 800;
-      color: #344054;
+      font-size: 15px;
+      color: #4A5563;
       user-select: none;
       gap: 8px;
       min-width: 0;
       overflow-wrap: anywhere;
       word-break: keep-all;
     }
-  
+
     .choice-yes input:checked + span {
       background: var(--green-bg);
       color: var(--green);
-      box-shadow: inset 0 0 0 1px rgba(46,125,50,0.25);
+      box-shadow: inset 0 0 0 1.5px rgba(33,121,58,0.35);
     }
-  
+
     .choice-no input:checked + span {
       background: var(--red-bg);
       color: var(--red);
-      box-shadow: inset 0 0 0 1px rgba(180,35,24,0.25);
+      box-shadow: inset 0 0 0 1.5px rgba(179,38,30,0.35);
     }
-  
-    .choice-yes span::before {
-      content: "✔";
-      font-size: 12px;
-      opacity: .8;
-    }
-  
-    .choice-no span::before {
-      content: "✕";
-      font-size: 12px;
-      opacity: .8;
-    }
-  
+
+    .choice-yes span::before { content: "✔"; font-size: 12px; opacity: .85; }
+    .choice-no span::before { content: "✕"; font-size: 12px; opacity: .85; }
+
     .correction-wrap {
       margin-top: 10px;
-      background: var(--amber-bg);
-      border: 1px solid #f3d3b0;
-      border-radius: 14px;
-      padding: 12px;
+      background: var(--safety-weak);
+      border: 1px solid #F0C9A9;
+      border-radius: 13px;
+      padding: 13px;
     }
-  
-    .correction-wrap label {
-      color: #9a4d00;
-      font-size: 13px;
-    }
-  
-    .hidden {
-      display: none;
-    }
-  
-    .submit-wrap {
-      margin-top: 8px;
-    }
-  
+
+    .correction-wrap label { color: #9A4A16; font-size: 13px; }
+
+    .hidden { display: none; }
+
+    /* ---------- SUBMIT ---------- */
+    .submit-wrap { margin-top: 10px; }
+
     .submit-btn {
       border: none;
       border-radius: 14px;
-      background: linear-gradient(135deg, var(--teal) 0%, #0b5f75 100%);
+      background: linear-gradient(135deg, var(--teal) 0%, var(--navy) 100%);
       color: #fff;
       font-weight: 900;
-      font-size: 16px;
-      padding: 14px 16px;
-      box-shadow: 0 10px 20px rgba(15,118,110,0.20);
+      font-size: 16.5px;
+      padding: 16px 16px;
+      box-shadow: 0 12px 24px rgba(20,114,107,0.22);
       cursor: pointer;
+      letter-spacing: .01em;
     }
-  
-    .submit-btn:hover {
-      filter: brightness(1.03);
-    }
-  
+
+    .submit-btn:hover { filter: brightness(1.05); }
+    .submit-btn:active { transform: translateY(1px); }
+
     .footer-note {
-      margin-top: 10px;
+      margin-top: 12px;
       color: var(--muted);
-      font-size: 12px;
+      font-size: 12.5px;
       text-align: center;
     }
-  
+
+    .topbar {
+      display: flex;
+      justify-content: center;
+      margin-top: 22px;
+      margin-bottom: 0;
+    }
+
+    .topbar button {
+      width: auto;
+      border: 1.5px solid var(--line-strong);
+      background: #fff;
+      color: var(--navy);
+      border-radius: 999px;
+      padding: 10px 18px;
+      font-weight: 800;
+      font-size: 13.5px;
+      box-shadow: var(--shadow-sm);
+      cursor: pointer;
+    }
+
+    /* ---------- ACCESSIBILITY ---------- */
+    a:focus-visible, button:focus-visible, .choice input:focus-visible + span {
+      outline: 3px solid var(--teal);
+      outline-offset: 2px;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .choice, .submit-btn { transition: none; }
+    }
+
     @media (max-width: 720px) {
-      .field-grid {
-        grid-template-columns: 1fr;
+      .field-grid { grid-template-columns: 1fr; }
+      .radio-group { grid-template-columns: 1fr; }
+      .choice { width: 100%; }
+      .hero { padding: 24px 20px; }
+      .card { padding: 17px; }
+      .big-title { font-size: 18px; }
+      .subtitle { font-size: 14px; }
+      * { min-width: 0; }
+      input, select, textarea, button { max-width: 100%; }
+      input[type="datetime-local"], input[type="date"], select { min-width: 0; max-width: 100%; width: 100%; }
+      .hero, .card, .readbox, .question, .field-grid, .question-list, .radio-group {
+        max-width: 100%; overflow-x: hidden;
       }
-  
-      .radio-group {
-        grid-template-columns: 1fr;
-      }
-  
-      .choice {
-        width: 100%;
-      }
-  
-      .hero {
-        padding: 18px;
-      }
-  
-      .card {
-        padding: 16px;
-      }
-  
-      .big-title {
-        font-size: 20px;
-      }
-  
-      .subtitle {
-        font-size: 17px;
-      }
-
-      * {
-        min-width: 0;
-      }
-
-      input,
-      select,
-      textarea,
-      button {
-        max-width: 100%;
-      }
-
-      input[type="datetime-local"],
-      input[type="date"],
-      select {
-        min-width: 0;
-        max-width: 100%;
-        width: 100%;
-      }
-
-      .hero,
-      .card,
-      .readbox,
-      .question,
-      .field-grid,
-      .question-list,
-      .radio-group {
-        max-width: 100%;
-        overflow-x: hidden;
-      }
-
-      .intro-text,
-      .question-title,
-      .hero h1,
-      .big-title,
-      .subtitle {
-        word-break: break-word;
-        overflow-wrap: anywhere;
+      .intro-text, .question-title, .hero h1, .big-title, .subtitle {
+        word-break: break-word; overflow-wrap: anywhere;
       }
     }
   </style>
 </head>
 <body>
   <div class="page">
+
     <div class="hero">
-      <h1>의왕시니어클럽 안전확인 일지 (TBM)</h1>
+      <div class="hero-top">
+        <div>
+          <span class="hero-eyebrow"><span class="dot"></span>안전 확인 일지</span>
+          <h1>의왕시니어클럽<br/>TBM 안전확인 일지</h1>
+          <p class="hero-sub">작업을 시작하기 전, 오늘의 안전을 함께 점검해요</p>
+        </div>
+        <div class="stamp">SAFETY<br/>CHECK</div>
+      </div>
     </div>
 
+    <div class="step-label">
+      <span class="step-num">1</span>
+      <span class="step-text">기본 정보 입력</span>
+    </div>
     <div class="card">
-      <div class="section-title">기본 정보</div>
       <div class="field-grid">
         <div class="field">
           <label>사업단명</label>
@@ -518,21 +494,28 @@
       </div>
     </div>
 
+    <div class="step-label">
+      <span class="step-num">2</span>
+      <span class="step-text">안전점검 리스트 확인</span>
+    </div>
     <div class="card readbox">
       <div class="big-title">
         안전점검 리스트<br>
-        <span class="subtitle">(잠재위험요인 및 대책)</span>
+        <span class="subtitle">잠재위험요인 및 대책</span>
       </div>
       <pre id="introText" class="intro-text"></pre>
     </div>
 
+    <div class="step-label">
+      <span class="step-num">3</span>
+      <span class="step-text">작업 전 안전조치 여부</span>
+    </div>
     <div class="card">
-      <div class="big-title">작업 전 안전조치 여부</div>
       <div id="questionsArea" class="question-list"></div>
     </div>
 
     <div class="submit-wrap">
-      <button id="submitBtn" class="submit-btn">제출</button>
+      <button id="submitBtn" class="submit-btn">제출하기</button>
       <div class="footer-note">입력 후 제출 버튼을 눌러 저장하세요.</div>
     </div>
 
@@ -542,7 +525,6 @@
       </a>
     </div>
   </div>
-
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 

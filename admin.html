@@ -575,6 +575,17 @@
       return `"${s.replaceAll('"', '""')}"`;
     }
 
+    function setDefaultTodayRange() {
+      const today = new Date();
+      const year = today.getFullYear();
+      const month = String(today.getMonth() + 1).padStart(2, '0');
+      const day = String(today.getDate()).padStart(2, '0');
+      const value = `${year}-${month}-${day}`;
+
+      startDate.value = value;
+      endDate.value = value;
+    }
+    
     function formatKST(datetimeStr) {
       if (!datetimeStr) return '';
       return new Date(datetimeStr).toLocaleString('ko-KR', {
@@ -1116,6 +1127,7 @@
     }
 
     async function initAdmin() {
+      setDefaultTodayRange();
       await loadUnits();
       await clearSelection();
     }
